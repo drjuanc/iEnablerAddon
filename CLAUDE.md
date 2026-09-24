@@ -7,9 +7,8 @@ Browser extension (Chrome/Edge) that improves the look and usability of the Walt
 - `manifest.json`: extension manifest
 - `background.js`: background/service worker script
 - `content/`: content scripts injected into iEnabler pages
-  - `content.js`
-  - `js/frameF3Loader.js`, `js/tableLoader.js`: handle iEnabler frames and tables
-  - `css/`: styling for login page, frames (F1, F3) and shared variables
+  - `content.js`: login page, and the main menu page and its frames (F1 menu, F3 content), including the subjects table. Theme, colours and accessibility apply and revert live via `chrome.storage.onChanged`
+  - `css/`: styling for login page, main menu (`content.css`), frames (`framef1.css`, `framef3.css`), `accessibility.css` and shared variables
 - `popup/`: extension popup (`popup.html`, `popup.js`, `popup.css`, `other.html`)
 - `assets/`: fonts, icons (16–128 px) and the WSU logo (`pics/wsu-logo-new.png`)
 - `lib/`: third-party libraries (Bootstrap, Bootstrap Table, jQuery). Do not edit these files.

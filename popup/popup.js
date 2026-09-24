@@ -24,6 +24,14 @@ chrome.tabs.query({ active: true, currentWindow: true }, function (tabs) {
                 changeSwitchState(arrItems, arrConfig[0][1]);
             }
 
+            // "Custom colours" and "Improve accessibility" switches, on only while the custom theme is on
+            if (arrConfig[1][0] == 'customColors') {
+                changeSwitchState([$('#customColors')], arrConfig[0][1] && arrConfig[1][1]);
+            }
+            if (arrConfig[2][0] == 'wgca') {
+                changeSwitchState([$('#wcga')], arrConfig[0][1] && arrConfig[2][1]);
+            }
+
 
             // "Custom Login" switch
             if (arrConfig[3][0] == 'customLogin') {
@@ -110,9 +118,12 @@ chrome.tabs.query({ active: true, currentWindow: true }, function (tabs) {
                 arrConfig[0][1] = state;  
                 storeConfig(arrConfig);
 
-                //Activate the theme sub-options.
+                //Activate the theme sub-options. They keep their own settings.
+                //The iEnabler pages update themselves when the config changes (see content/content.js)
                 var items = [$("#customColors"), $("#wcga"), $("#customColorsH6"), $("#wcgaH6")];
                 changeItemStatus(items, state);
+                changeSwitchState([$('#customColors')], state && arrConfig[1][1]);
+                changeSwitchState([$('#wcga')], state && arrConfig[2][1]);
 
             } else {
                 //Otherwise trigger an error
@@ -125,28 +136,36 @@ chrome.tabs.query({ active: true, currentWindow: true }, function (tabs) {
 
         });
 
-        //Click on the custom colors switch
+        //Click on the custom colours switch
         $('#customColors').change(function (event) {
 
             var state = $(this).prop('checked');
 
-            if (state) {
-                // Activate the custom colors
+            if (arrConfig[1][0] == 'customColors') {
+                //Save it, the iEnabler pages update themselves (see content/content.js)
+                arrConfig[1][1] = state;
+                storeConfig(arrConfig);
             } else {
-                // deactivate the custom colors
+                //Otherwise trigger an error
+                console.log("Error in the configuration option: " + arrConfig[1][0]);
+                configCorruption();
             }
             event.preventDefault();
         });
 
-        //Click on the accesibility switch
+        //Click on the accessibility switch
         $('#wcga').change(function (event) {
 
             var state = $(this).prop('checked');
 
-            if (state) {
-                // Activate the accesibility options
+            if (arrConfig[2][0] == 'wgca') {
+                //Save it, the iEnabler pages update themselves (see content/content.js)
+                arrConfig[2][1] = state;
+                storeConfig(arrConfig);
             } else {
-                // deactivate the accesibility options
+                //Otherwise trigger an error
+                console.log("Error in the configuration option: " + arrConfig[2][0]);
+                configCorruption();
             }
             event.preventDefault();
         });
@@ -431,15 +450,9 @@ function changeSwitchState(items, state) {
 }
 
 /*Stores the config in the user chrome profile, this applies to all browser where the extension is active*/
+//Saved once: every save reaches the open iEnabler pages through chrome.storage.onChanged
 function storeConfig(objConfig) {
-
-    for (let config in objConfig) {
-
-        chrome.storage.sync.set({ config: objConfig }, function () {
-
-        });
-    };
-
+    chrome.storage.sync.set({ config: objConfig });
 }
 
 function configCorruption(){
@@ -451,4 +464,4 @@ function configCorruption(){
         priority: 2
     });
 
-}
+}

@@ -1,0 +1,101 @@
+/*Colours are defined in variables.css, injected before this file (see manifest.json)*/
+
+/*"Improve accessibility" switch (WCAG 2.2 AA) on the main menu page and its frames.
+content/content.js adds 'ie-a11y' to <html> when the custom theme and this switch are both on.
+The changes to the markup (labels, headers, alt text, frame titles, skip link, keyboard) are
+made by content/content.js, this file only has the visual part*/
+
+/*== Focus ring (2.4.7, 1.4.11) ==*/
+/*Maroon inner ring and ochre outer ring: ochre alone is under 3:1 on cream and light grey,
+maroon alone disappears on the maroon sidebar, together one of them always reaches 3:1.
+:not(#ie-a11y-boost) adds the weight of an id, so the ring wins over the theme's focus styles*/
+.ie-a11y :focus-visible:not(#ie-a11y-boost) {
+    outline: 3px solid var(--wsu-ochre) !important;
+    outline-offset: 2px !important;
+    box-shadow: 0 0 0 2px var(--wsu-maroon) !important;
+}
+
+/*== Skip link (2.4.1), hidden until it gets the focus ==*/
+.ie-a11y .ienablerSkip {
+    position: absolute;
+    top: 8px;
+    left: 8px;
+    z-index: 1000;
+    padding: 8px 16px;
+    background-color: var(--wsu-maroon);
+    color: var(--wsu-cream) !important;
+    font-weight: 700;
+    border-radius: 6px;
+    transform: translateY(-200%);
+}
+
+.ie-a11y .ienablerSkip:focus {
+    transform: none;
+}
+
+/*== Larger click targets (2.5.8, at least 24 by 24 px) ==*/
+/*Menu items and the open/close carets in the sidebar. They stay inline, as the portal lays them out:
+vertical padding on an inline link enlarges the area you can click without moving the rows, and the
+line height keeps the rows just far enough apart that those areas do not overlap.
+Do not make them inline-block: the theme's 12px top margin (.col-sm-12 > *) and 5px padding would
+then apply to every link and open large gaps. Collapsed submenus are not in the page at all
+(the portal redraws the menu on every open and close), so only the visible items are affected*/
+.ie-a11y.ie-f1 #menu .col-sm-12 {
+    line-height: 25px;
+}
+
+/*Menu items: about 25px high (text plus 3px above and below)*/
+.ie-a11y.ie-f1 #menu a[class^="menuLvl"] {
+    padding-top: 3px !important;
+    padding-bottom: 3px !important;
+}
+
+/*Carets: the 15px icon plus 5px all round, 25 by 25px*/
+.ie-a11y.ie-f1 #menu a:has(> img) {
+    padding: 5px;
+}
+
+.ie-a11y.ie-f1 #menu a > img {
+    vertical-align: middle;
+}
+
+/*Buttons and drop-downs in the content frame*/
+.ie-a11y.ie-f3 [type=button], .ie-a11y.ie-f3 [type=reset], .ie-a11y.ie-f3 [type=submit],
+.ie-a11y.ie-f3 button, .ie-a11y.ie-f3 select {
+    min-height: 32px;
+    min-width: 32px;
+}
+
+/*Calendar and other image links in the content frame, kept inline as above*/
+.ie-a11y.ie-f3 a:has(> img) {
+    padding: 4px;
+}
+
+/*== Readable text (supports 1.4.4 and 1.4.12) ==*/
+/*At least 1rem, but never smaller than the text around it*/
+.ie-a11y.ie-f3 body {
+    line-height: 1.5 !important;
+}
+
+.ie-a11y.ie-f1 #menu a {
+    font-size: max(1rem, 1em) !important;
+}
+
+.ie-a11y.ie-f3 :is(p, li, td, th, label, input, select, textarea, font, a) {
+    font-size: max(1rem, 1em) !important;
+}
+
+.ie-a11y.ie-f3 table.mi_userdet td {
+    line-height: 1.5 !important;
+}
+
+/*== Contrast (1.4.3) ==*/
+/*The portal's pure red (#FF0000) is 3.4:1 on the notice box, WSU red is 6.4:1*/
+.ie-a11y font[color="#FF0000" i], .ie-a11y font[color="red" i], .ie-a11y .mandatory_fld {
+    color: var(--wsu-red) !important;
+}
+
+/*Muted text at 7.8:1 on white*/
+.ie-a11y .text-muted {
+    color: var(--txtMuted) !important;
+}

@@ -35,9 +35,6 @@
   "web_accessible_resources": [
     {
       "resources": [
-        "content/css/variables.css",
-        "content/css/framef1.css",
-        "content/css/framef3.css",
         "assets/fonts/RobotoCondensed-Regular.ttf",
         "assets/fonts/RobotoCondensed-Bold.ttf",
         "assets/fonts/NotoSans-Regular.ttf",
@@ -45,13 +42,7 @@
         "assets/pics/wsu-logo-new.png",
         "lib/css/bootstrap.min.css",
         "lib/css/bootstrap.min.css.map",
-        "lib/css/bootstrap-table.min.css",
-        "lib/js/jquery.min.js",
-        "lib/js/bootstrap.bundle.min.js",
-        "lib/js/bootstrap-table.min.js",
-        "content/js/frameF3Loader.js",
-        "content/js/tableLoader.js"
-
+        "lib/css/bootstrap-table.min.css"
       ],
       "matches": [ "https://*.ieweb.wsu.ac.za/*" ]
     }
@@ -67,15 +58,24 @@
         "content/css/variables.css",
         "content/css/content.css",
         "content/css/login.css",
-        "lib/css/bootstrap.css",
-        "lib/css/bootstrap-table.min.css"      
+        "content/css/framef1.css",
+        "content/css/framef3.css",
+        "content/css/accessibility.css"
       ],
       "js": [
         "lib/js/jquery.min.js",
         "content/content.js",
-        "content/js/frameF3Loader.js",
         "lib/js/bootstrap.bundle.min.js",
         "lib/js/bootstrap-table.min.js"
+      ]
+    },
+    {
+      "all_frames" : true,
+      "matches": [
+        "https://ieweb.wsu.ac.za/*mi_login*"
+      ],
+      "css": [
+        "lib/css/bootstrap.css"
       ]
     }
   ]

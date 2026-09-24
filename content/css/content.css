@@ -1,8 +1,13 @@
 /*Colours are defined in variables.css, injected before this file (see manifest.json)*/
 
-/*=== Custon Theme =====*/
+/*Main menu page (mi_main_menu): the sidebar with the menu frame (F1) and the content frame (F3).
+content/content.js adds 'ie-top' to <html> on this page, 'ie-theme' when the custom theme is on
+and 'ie-colours' when the custom colours are on, so every rule here is scoped to those classes.
+Frame F1 is styled in framef1.css, frame F3 in framef3.css and accessibility in accessibility.css*/
+
+/*=== Custom theme ===*/
 /*Bar on top*/
- .customTheme #fra_header {
+.ie-theme.ie-top #fra_header {
     border-bottom: 1px solid var(--borderLight);
     border-top: 0;
     display: flex;
@@ -14,74 +19,58 @@
     height: 3em;
     margin-bottom: 5px;
 }
-/*Push menu to the left hidding some invisible images */
-.customTheme .col-sm-12 > img{
+
+/*Push menu to the left hiding some invisible images*/
+.ie-theme.ie-top .col-sm-12 > img {
     display: none;
 }
 
-
-/*Bar on top*/
-.customTheme #fra_header {
-    border-bottom: 1px solid var(--borderLight);
-    border-top: 0;
-    display: flex;
-    flex-wrap: wrap;
-    align-content: flex-end;
-    flex-direction: row;
-    justify-content: space-between;
-    padding: 0 20px 10px 20px;
-    height: 3em;
-}
-
 /*Fixing logo*/
-.customTheme .flex-container>div {
+.ie-theme.ie-top .flex-container > div {
     text-align: center;
     width: 100%;
 }
 
-.customTheme .flex-container img {
+.ie-theme.ie-top .flex-container img {
     height: unset !important;
     width: 280px !important;
 }
 
-/*New WSU logo on the dark sidebar, see --logoOnDarkFilter in variables.css*/
-.wsuLogoOnDark {
-    filter: var(--logoOnDarkFilter);
-}
-
 /*=== Size margin and paddings ===*/
 /*width of the left sidebar*/
-.customTheme .w3-large {
+.ie-theme.ie-top .w3-large {
     width: 100%;
 }
 
-
-.customTheme  #mySidebar {
+.ie-theme.ie-top #mySidebar {
     width: 280px !important;
-    /*margin-left: -20px;*/
     height: 100vw;
 }
-body.customTheme .w3-main{
+
+.ie-theme.ie-top body .w3-main {
     margin-left: 280px !important;
 }
 
-.customTheme .w3-container, .w3-panel {
+.ie-theme.ie-top .w3-container, .ie-theme.ie-top .w3-panel {
     padding: 0 !important;
 }
 
-.customTheme .flex-container > * {
+.ie-theme.ie-top .flex-container > * {
     margin-top: 20px !important;
 }
 
+@media (max-width: 992px) {
+    .ie-theme.ie-top body .w3-main {
+        margin-left: 0 !important;
+    }
+}
 
-/*=== Custon Colors =====*/
-.customTheme nav.w3-sidebar {
+/*=== Custom colours ===*/
+.ie-colours.ie-top nav.w3-sidebar {
     background-color: var(--primaryColor) !important;
 }
 
-@media (max-width: 992px){
-    body.customTheme .w3-main{
-        margin-left: 0 !important;
-    }
-
+/*New WSU logo on the dark sidebar, see --logoOnDarkFilter in variables.css*/
+.ie-colours.ie-top .wsuLogoOnDark {
+    filter: var(--logoOnDarkFilter);
 }
