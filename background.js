@@ -1,17 +1,5 @@
-//Default configuration. The popup and content scripts read it by index, so keep the order.
-const DEFAULT_CONFIG = [
-    ['customTheme', true],       //[0]
-    ['customColors', true],      //[1]
-    ['wgca', true],              //[2]
-    ['customLogin', true],       //[3]
-    ['customLoginColors', true], //[4]
-    ['fixWSULogo', true],       //[5]
-    ['userTypeDef', false],       //[6] select the user type below by default on the login page
-    ['cleanLogin', true],       //[7]
-    ['otherConfg', false],       //[8]
-    ['userType', 'S']            //[9] S student, P personnel, A alumni, O other (values of the login radios)
-
-];
+//DEFAULT_CONFIG and mergeConfig
+importScripts('config.js');
 
 chrome.runtime.onInstalled.addListener(function (details) {
     if (details.reason === 'install') {
@@ -19,42 +7,24 @@ chrome.runtime.onInstalled.addListener(function (details) {
         storeConfig(DEFAULT_CONFIG);
 
     } else if (details.reason === 'update') {
-        //On update keep the user's settings and only add the options that are missing
+        //On update keep the user's settings and only add the options that are missing.
+        //Nothing is written when they are already complete, as after reloading the unpacked extension
         chrome.storage.sync.get('config', function (result) {
-            storeConfig(mergeConfig(result.config));
+            if (chrome.runtime.lastError) {
+                console.warn('iEnablerAddon: could not read the settings to update them: ' + chrome.runtime.lastError.message);
+                return;
+            }
+            let merged = mergeConfig(result.config);
+            if (JSON.stringify(merged) !== JSON.stringify(result.config)) storeConfig(merged);
         });
     }
 });
 
-//Build the config in the default order, keeping every value the user already has
-function mergeConfig(storedConfig) {
-    if (!Array.isArray(storedConfig)) return DEFAULT_CONFIG;
-
-    //Before v2.0.0 there was a 'Personnel as default' switch: on becomes Personnel selected by default,
-    //off becomes Student, not by default
-    let personnelDef = storedConfig.find(item => Array.isArray(item) && item[0] === 'personnelDef');
-    storedConfig = storedConfig.filter(item => !(Array.isArray(item) && item[0] === 'personnelDef'));
-    if (personnelDef && !storedConfig.some(item => Array.isArray(item) && item[0] === 'userTypeDef')) {
-        let wasOn = personnelDef[1] === true;
-        storedConfig.push(['userTypeDef', wasOn], ['userType', wasOn ? 'P' : 'S']);
-    }
-
-    let merged = DEFAULT_CONFIG.map(function ([key, value]) {
-        let existing = storedConfig.find(item => Array.isArray(item) && item[0] === key);
-        return existing ? [key, existing[1]] : [key, value];
-    });
-
-    //Keep any stored options that are no longer in the defaults, so nothing is lost
-    storedConfig.forEach(function (item) {
-        if (Array.isArray(item) && !DEFAULT_CONFIG.some(([key]) => key === item[0])) merged.push(item);
-    });
-
-    return merged;
-}
-
 /*Stores the config in the user chrome profile, this applies to all browser where the extension is active*/
 function storeConfig(objConfig) {
-    chrome.storage.sync.set({ config: objConfig });
+    chrome.storage.sync.set({ config: objConfig }, function () {
+        if (chrome.runtime.lastError) console.warn('iEnablerAddon: could not save the settings: ' + chrome.runtime.lastError.message);
+    });
 }
 
 

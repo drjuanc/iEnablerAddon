@@ -6,6 +6,7 @@ Browser extension (Chrome/Edge) that improves the look and usability of the Walt
 
 - `manifest.json`: extension manifest
 - `background.js`: background/service worker script
+- `config.js`: default settings and `mergeConfig`, shared by `background.js` (importScripts) and the popup
 - `content/`: content scripts injected into iEnabler pages
   - `content.js`: login page, and the main menu page and its frames (F1 menu, F3 content), including the subjects table. Theme, colours and accessibility apply and revert live via `chrome.storage.onChanged`
   - `css/`: styling for login page, main menu (`content.css`), frames (`framef1.css`, `framef3.css`), `accessibility.css` and shared variables

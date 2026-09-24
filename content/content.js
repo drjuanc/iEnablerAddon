@@ -30,6 +30,10 @@
    //I read all settings and stored in a abject containing an array of propertyes
     chrome.storage.sync.get(function (result) {
 
+        if (chrome.runtime.lastError) {
+            console.warn('iEnablerAddon: could not read the settings: ' + chrome.runtime.lastError.message);
+            return;
+        }
         arrConfig = result.config;
         if (!Array.isArray(arrConfig)) return; //No settings stored yet
         /*==Now I read every individual configation and act accordingly==*/

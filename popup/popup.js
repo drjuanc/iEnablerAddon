@@ -13,7 +13,14 @@ chrome.tabs.query({ active: true, currentWindow: true }, function (tabs) {
             
         //Read the config and store it in the array
         chrome.storage.sync.get(function (result) {
-            arrConfig = result.config;
+            if (chrome.runtime.lastError) {
+                console.warn('iEnablerAddon: could not read the settings: ' + chrome.runtime.lastError.message);
+                result = {};
+            }
+            //Missing or incomplete settings show the defaults (see config.js). Nothing is saved
+            //until the user changes something
+            savedConfig = JSON.stringify(result.config);
+            arrConfig = mergeConfig(result.config);
 
             //Depending on the config update the controls
             // "Custom Theme" switch
@@ -202,12 +209,7 @@ chrome.tabs.query({ active: true, currentWindow: true }, function (tabs) {
                 //Update the login page
                 if (currentURL.includes('mi_login')) {
 
-                    chrome.runtime.sendMessage({ action: "customLogin", param: state  }, function (response) {
-
-                         if (response && response.noError) { //if all came back OK, activate or deactivate the theme sub-options
-
-                         }
-                    });                
+                    chrome.runtime.sendMessage({ action: "customLogin", param: state  }, messageSent);                
                   
                 }
 
@@ -235,12 +237,7 @@ chrome.tabs.query({ active: true, currentWindow: true }, function (tabs) {
                 //Update the login page
                 if (currentURL.includes('mi_login')) {
 
-                    chrome.runtime.sendMessage({ action: "customLoginColors", param: state }, function (response) {
-
-                        if (response && response.noError) { //if all came back OK, activate or deactivate the theme sub-options
-
-                        }
-                    });
+                    chrome.runtime.sendMessage({ action: "customLoginColors", param: state }, messageSent);
 
                 }
 
@@ -265,12 +262,7 @@ chrome.tabs.query({ active: true, currentWindow: true }, function (tabs) {
                 //Update the login page
                 if (currentURL.includes('mi_login')) {
 
-                    chrome.runtime.sendMessage({ action: "fixWSULogo", param: state }, function (response) {
-
-                        if (response && response.noError) { 
- 
-                        }
-                    });
+                    chrome.runtime.sendMessage({ action: "fixWSULogo", param: state }, messageSent);
 
                 }
 
@@ -294,12 +286,7 @@ chrome.tabs.query({ active: true, currentWindow: true }, function (tabs) {
                 //Update the login page
                 if (currentURL.includes('mi_login')) {
 
-                    chrome.runtime.sendMessage({ action: "userTypeDef", param: state, type: $('input[name="userType"]:checked').val() }, function (response) {
-
-                        if (response && response.noError) {
-
-                        }
-                    });
+                    chrome.runtime.sendMessage({ action: "userTypeDef", param: state, type: $('input[name="userType"]:checked').val() }, messageSent);
 
                 }
 
@@ -324,12 +311,7 @@ chrome.tabs.query({ active: true, currentWindow: true }, function (tabs) {
                 //Update the login page, only if this type is selected by default
                 if (arrConfig[6][1] && currentURL.includes('mi_login')) {
 
-                    chrome.runtime.sendMessage({ action: "userType", param: type }, function (response) {
-
-                        if (response && response.noError) {
-
-                        }
-                    });
+                    chrome.runtime.sendMessage({ action: "userType", param: type }, messageSent);
 
                 }
 
@@ -354,12 +336,7 @@ chrome.tabs.query({ active: true, currentWindow: true }, function (tabs) {
                 //Update the login page
                 if (currentURL.includes('mi_login')) {
 
-                    chrome.runtime.sendMessage({ action: "cleanLogin", param: state }, function (response) {
-
-                        if (response && response.noError) {
-
-                        }
-                    });
+                    chrome.runtime.sendMessage({ action: "cleanLogin", param: state }, messageSent);
 
                 }
 
@@ -450,9 +427,45 @@ function changeSwitchState(items, state) {
 }
 
 /*Stores the config in the user chrome profile, this applies to all browser where the extension is active*/
-//Saved once: every save reaches the open iEnabler pages through chrome.storage.onChanged
+//Every save reaches the open iEnabler pages through chrome.storage.onChanged.
+//chrome.storage.sync allows 120 writes a minute, so the saves are debounced: quick changes in a row
+//become one write, and nothing is written when the settings are the same as the ones saved
+const SAVE_DELAY = 400; //milliseconds
+var savedConfig; //JSON of the settings in storage, set when the popup reads them
+var pendingConfig = null;
+var saveTimer = null;
+
 function storeConfig(objConfig) {
-    chrome.storage.sync.set({ config: objConfig });
+    pendingConfig = objConfig;
+    clearTimeout(saveTimer);
+    saveTimer = setTimeout(writeConfig, SAVE_DELAY);
+}
+
+function writeConfig() {
+    clearTimeout(saveTimer);
+    saveTimer = null;
+    if (!pendingConfig) return;
+
+    var json = JSON.stringify(pendingConfig);
+    pendingConfig = null;
+    if (json === savedConfig) return; //Back to what is already saved
+
+    chrome.storage.sync.set({ config: JSON.parse(json) }, function () {
+        if (chrome.runtime.lastError) {
+            //Not marked as saved, so the next change tries again with all the settings
+            console.warn('iEnablerAddon: could not save the settings: ' + chrome.runtime.lastError.message);
+        } else {
+            savedConfig = json;
+        }
+    });
+}
+
+//Closing the popup must not lose a change still waiting for the delay
+window.addEventListener('pagehide', writeConfig);
+
+//Callback for the messages to background.js that update the login page live
+function messageSent(response) {
+    if (chrome.runtime.lastError) console.warn('iEnablerAddon: could not update the page: ' + chrome.runtime.lastError.message);
 }
 
 function configCorruption(){
