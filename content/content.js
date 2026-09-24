@@ -2,15 +2,22 @@
 
 
 
-    //end test
     let currentURl = window.location.href; //Get the page URL
     let arrConfig; //Set the var config
+
+    //New WSU logo, and the version shown on the dark sidebar of the main menu.
+    //There is no official light logo yet, so the sidebar uses the same file turned white by
+    //--logoOnDarkFilter in variables.css. When an official one arrives, point WSU_LOGO_ON_DARK
+    //at it and set --logoOnDarkFilter to 'none'.
+    const WSU_LOGO = 'assets/pics/wsu-logo-new.png';
+    const WSU_LOGO_ON_DARK = 'assets/pics/wsu-logo-new.png';
    
 
    //I read all settings and stored in a abject containing an array of propertyes
     chrome.storage.sync.get(function (result) {
 
         arrConfig = result.config;
+        if (!Array.isArray(arrConfig)) return; //No settings stored yet
         /*==Now I read every individual configation and act accordingly==*/
         //Custom theme
 
@@ -36,7 +43,7 @@
             if (arrConfig[4][0] = 'customLogin' && arrConfig[4][1]) docBody.classList.add("customLoginColors");
 
             //Fix WSU logo. If the option is active I call the function
-            if ((arrConfig[5][0] = 'fixWSULogo' && arrConfig[5][1]) && (arrConfig[3][1])) fixWSULogo(350);
+            if ((arrConfig[5][0] = 'fixWSULogo' && arrConfig[5][1]) && (arrConfig[3][1])) fixWSULogo(360);
 
             //Select personnel as default option
             if ((arrConfig[6][0] = 'personnelDef' && arrConfig[6][1]) && (arrConfig[3][1])) document.getElementsByName('numtype')[1].checked = true;;
@@ -46,6 +53,9 @@
 
             //Remove the margin of the main div
             document.getElementsByClassName('w3-main')[0].removeAttribute('style');
+
+            //Shorter login header and the missing space in the pin hint
+            if (arrConfig[3][1]) fixLoginTexts();
         }
 
         if (currentURl.includes("mi_main_menu")) { //Make sure the user is in the other page
@@ -60,22 +70,46 @@
     });
 
 
-    //Fixing the low-res WSU logo'
+    //Replace the low-res WSU logo with the new one, keeping its aspect ratio.
+    //Keep the login width in step with fixWSULogo in background.js
     function fixWSULogo(logoWidth) {
 
         var wsuLogo = document.getElementsByTagName("img")[0];
+        if (!wsuLogo) return;
+        wsuLogo.removeAttribute('height');
         wsuLogo.width = logoWidth;
+        wsuLogo.style.height = 'auto';
+        wsuLogo.style.maxWidth = '90%';
 
         if (currentURl.includes("mi_login")) { //Make sure the user is in login page
-            wsuLogo.src = chrome.runtime.getURL('assets/pics/wsulogo.jpg');
+            wsuLogo.src = chrome.runtime.getURL(WSU_LOGO);
         }
 
 
         if (currentURl.includes("mi_main_menu")) { //Make sure the user is in the other page
-            wsuLogo.src = chrome.runtime.getURL('assets/pics/wsuinv.png');
-
+            wsuLogo.src = chrome.runtime.getURL(WSU_LOGO_ON_DARK);
+            wsuLogo.classList.add('wsuLogoOnDark');
         }
 
+    }
+
+    //Login page wording. The original text is kept in data-ienabler-original so
+    //removeCustomLogin in background.js can bring it back. Keep both in step.
+    function fixLoginTexts() {
+        document.querySelectorAll('header.w3-blue h5').forEach(function (header) {
+            if (header.textContent.trim() == 'Registered Users: Login Credentials') {
+                header.dataset.ienablerOriginal = header.textContent;
+                header.textContent = 'Login Credentials';
+            }
+        });
+
+        var pin = document.querySelector('form[name="frmLogin"] input[name="pin"]');
+        var hint = pin ? pin.nextElementSibling : null;
+        var hintText = hint && hint.tagName == 'P' ? hint.firstChild : null;
+        if (hintText && hintText.nodeType == Node.TEXT_NODE && hintText.nodeValue.includes('digits.Do')) {
+            hint.dataset.ienablerOriginal = hintText.nodeValue;
+            hintText.nodeValue = hintText.nodeValue.replace('digits.Do', 'digits. Do');
+        }
     }
 
     document.addEventListener('readystatechange', event => {
@@ -146,12 +180,12 @@
     
     if (allMarksUrl == 'w26pkg.w26savemulti' || allMarksUrl == 'w06pkg.w06savemulti' || allMarksUrl == 'web.w06pkg.w06_upd_multi_proc') {
 
-        $('form[name="frmOne"]').eq(0).before('<input id = "btnPaste" type="submit" value="Paste from excel" onclick="#" class="btn btn - primary btn - right">');
+        $('form[name="frmOne"]').eq(0).before('<input id = "btnPaste" type="submit" value="Paste from Excel" onclick="#" class="btn btn - primary btn - right">');
 
     }
 
     $('#btnPaste').click(function () {
-        var marks = window.prompt("Paste from Excel. \nPlease make sure the student marks in the same order they show on this page", "Marks");
+        var marks = window.prompt("Paste from Excel.\nPlease make sure the student marks are in the same order they appear on this page", "Marks");
         if (typeof marks !== 'undefined' && marks !== '') {
             fillUpFields(marks, allMarksUrl);
             window.scrollTo(0, document.body.scrollHeight + 50);
@@ -179,12 +213,12 @@
 
         //Compare the number of rows from the excel with the number od students in the page
         if (rows.length < fieldList.length) {
-            const response = confirm('There are only ' + rows.length + ' marks from the excel and ' + fieldList.length + ' students in the page.\nOnly the first ' + rows.length + ' students would get marks. Normaly this is an indication you selected a wrong spreadsheet or column.\n\Do you sure you want to continue?');
+            const response = confirm('There are only ' + rows.length + ' marks from Excel and ' + fieldList.length + ' students on the page.\nOnly the first ' + rows.length + ' students will get marks. This normally means you selected the wrong spreadsheet or column.\nAre you sure you want to continue?');
             if (!response) return;
         }
 
         if (rows.length > fieldList.length) {
-            const response = confirm('There are ' + rows.length + ' marks from the excel and only ' + fieldList.length + ' students in the page. Normaly this is an indication you selected a wrong spreadsheet or column.\nThe last ' + (rows.length - fieldList.length) + ' marks from excel will be ignored.\n\Do you sure you want to continue?');
+            const response = confirm('There are ' + rows.length + ' marks from Excel and only ' + fieldList.length + ' students on the page. This normally means you selected the wrong spreadsheet or column.\nThe last ' + (rows.length - fieldList.length) + ' marks from Excel will be ignored.\nAre you sure you want to continue?');
             if (!response) return;
         }
 

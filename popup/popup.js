@@ -179,7 +179,7 @@ chrome.tabs.query({ active: true, currentWindow: true }, function (tabs) {
 
                     chrome.runtime.sendMessage({ action: "customLogin", param: state  }, function (response) {
 
-                         if (response.noError) { //if all came back OK, activate or deactivate the theme sub-options
+                         if (response && response.noError) { //if all came back OK, activate or deactivate the theme sub-options
 
                          }
                     });                
@@ -212,7 +212,7 @@ chrome.tabs.query({ active: true, currentWindow: true }, function (tabs) {
 
                     chrome.runtime.sendMessage({ action: "customLoginColors", param: state }, function (response) {
 
-                        if (response.noError) { //if all came back OK, activate or deactivate the theme sub-options
+                        if (response && response.noError) { //if all came back OK, activate or deactivate the theme sub-options
 
                         }
                     });
@@ -242,7 +242,7 @@ chrome.tabs.query({ active: true, currentWindow: true }, function (tabs) {
 
                     chrome.runtime.sendMessage({ action: "fixWSULogo", param: state }, function (response) {
 
-                        if (response.noError) { 
+                        if (response && response.noError) { 
  
                         }
                     });
@@ -271,7 +271,7 @@ chrome.tabs.query({ active: true, currentWindow: true }, function (tabs) {
                         
                     chrome.runtime.sendMessage({ action: "personnelDef", param: state }, function (response) {
 
-                        if (response.noError) {
+                        if (response && response.noError) {
 
                         }
                     });
@@ -301,7 +301,7 @@ chrome.tabs.query({ active: true, currentWindow: true }, function (tabs) {
 
                     chrome.runtime.sendMessage({ action: "cleanLogin", param: state }, function (response) {
 
-                        if (response.noError) {
+                        if (response && response.noError) {
 
                         }
                     });
@@ -318,6 +318,40 @@ chrome.tabs.query({ active: true, currentWindow: true }, function (tabs) {
     })//End Document.ready
 
 }); //End Tab.query
+
+/*=========Home and Contact tabs==========*/
+$(document).ready(function () {
+    var version = chrome.runtime.getManifest().version;
+
+    //Version number next to the name and in the footer
+    $('.jsVersion').text('v' + version);
+
+    //"Report a problem" email, with the version and a short template filled in
+    var subject = 'iEnablerAddon v' + version + ' \u2013 problem report';
+    var body = [
+        'What happened:',
+        '',
+        '',
+        'What you expected to happen:',
+        '',
+        '',
+        'Which iEnabler page (for example login, marks entry):',
+        '',
+        '',
+        '---',
+        'iEnablerAddon v' + version,
+        'Browser: ' + navigator.userAgent
+    ].join('\n');
+    $('#lnkReport').attr('href', 'mailto:jgarcia-alonso@wsu.ac.za'
+        + '?subject=' + encodeURIComponent(subject)
+        + '&body=' + encodeURIComponent(body));
+
+    //Links do not open reliably from inside the popup, so open them in a new tab
+    $('.jsExternal').click(function (event) {
+        event.preventDefault();
+        chrome.tabs.create({ url: this.href });
+    });
+});
 
 /*=========Services functions==========*/
 /*===All the reusable functions needded for the config page "Popup"===*/
@@ -371,8 +405,8 @@ function configCorruption(){
     chrome.notifications.create('configError', {
         type: 'basic',
         iconUrl: '../assets/icons/icon.png',
-        title: 'Oops Something went wrong',
-        message: 'Seems like there is some some configuration data corruption. Please reinstall the extension.',
+        title: 'Oops, something went wrong',
+        message: 'The iEnablerAddon settings seem to be corrupted. Please reinstall the extension.',
         priority: 2
     });
 

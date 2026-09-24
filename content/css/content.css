@@ -1,15 +1,9 @@
-/*Defining colors and spaces in variables*/
-:root {
-    /*--primaryColor: #1b72b6*/
-    --primaryColor: #0b603d;
-    /* --txtPrimaryMatch: #fff;*/
-    --txtPrimaryMatch: #c2e3d6;
-}
+/*Colours are defined in variables.css, injected before this file (see manifest.json)*/
 
 /*=== Custon Theme =====*/
 /*Bar on top*/
  .customTheme #fra_header {
-    border-bottom: 1px solid #ccc;
+    border-bottom: 1px solid var(--borderLight);
     border-top: 0;
     display: flex;
     flex-wrap: wrap;
@@ -28,7 +22,7 @@
 
 /*Bar on top*/
 .customTheme #fra_header {
-    border-bottom: 1px solid #ccc;
+    border-bottom: 1px solid var(--borderLight);
     border-top: 0;
     display: flex;
     flex-wrap: wrap;
@@ -48,6 +42,11 @@
 .customTheme .flex-container img {
     height: unset !important;
     width: 280px !important;
+}
+
+/*New WSU logo on the dark sidebar, see --logoOnDarkFilter in variables.css*/
+.wsuLogoOnDark {
+    filter: var(--logoOnDarkFilter);
 }
 
 /*=== Size margin and paddings ===*/

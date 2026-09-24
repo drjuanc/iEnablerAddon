@@ -1,4 +1,4 @@
-@import "variables.css"; /* Import the variables */
+/*Colours are defined in variables.css, injected before this file (see manifest.json)*/
 
 /*===Login page multiple tweaks ====*/
 /*Body*/
@@ -29,10 +29,72 @@ body.w3-margin-left.customLogin {
     font-size: 1.1rem;
 }
 
-/*marging to the buttons at the end*/
+/*Margin for the buttons at the end*/
 .customLogin [type=submit], .customLogin [type=button] {
     margin-bottom: 10px;
     padding: 4px 6px !important;
+}
+
+/*== Login form (form frmLogin) ==*/
+/*Student/Personnel number and Pin: identical inputs, each on its own line*/
+.customLogin form[name="frmLogin"] .w3-input {
+    display: block;
+    box-sizing: border-box;
+    width: 100%;
+    height: 2.5rem;
+    padding: 0.4rem 0.75rem;
+    font-size: 1rem;
+    border: 1px solid var(--inputBorder) !important;
+    border-radius: 6px;
+    background-color: var(--neutral-white);
+    outline: 0;
+}
+
+/*Ochre ring only while focused (the number field has autofocus, so this replaces the browser's own ring)*/
+.customLogin form[name="frmLogin"] .w3-input:focus {
+    border-color: var(--focusColor) !important;
+    box-shadow: var(--focusRing);
+}
+
+/*Labels above the inputs, with space between each input and the next label*/
+.customLogin form[name="frmLogin"] #LogUsr,
+.customLogin form[name="frmLogin"] .w3-input + label {
+    display: block;
+    margin-bottom: 0.35rem;
+    padding-right: 0;
+}
+
+.customLogin form[name="frmLogin"] input[name="unum"] {
+    margin-bottom: 1.25rem;
+}
+
+/*The pin hint sits just under the pin input*/
+.customLogin form[name="frmLogin"] input[name="pin"] {
+    margin-bottom: 0.35rem;
+}
+
+.customLogin form[name="frmLogin"] input[name="pin"] + p {
+    margin: 0 0 1.25rem 0;
+    font-size: 0.9rem;
+}
+
+/*Buttons: same height and spacing, wrapping onto new lines on narrow screens*/
+.customLogin form[name="frmLogin"] [type=submit],
+.customLogin form[name="frmLogin"] [type=button] {
+    display: inline-block;
+    box-sizing: border-box;
+    min-height: 2.5rem;
+    margin: 0 0.25rem 0.6rem 0;
+    padding: 0.4rem 1rem !important;
+    font-size: 0.95rem;
+    border-radius: 6px;
+    white-space: nowrap;
+}
+
+.customLogin form[name="frmLogin"] [type=submit]:focus-visible,
+.customLogin form[name="frmLogin"] [type=button]:focus-visible {
+    outline: 0;
+    box-shadow: var(--focusRing);
 }
 /*Fixing students and login card*/
 .customLogin .login {
@@ -81,7 +143,7 @@ body.w3-margin-left.customLogin {
     border-radius: 10px 10px 0 0;
 }
 
-/*Pimping the blue login header*/
+/*Login panel header*/
 .customLogin header.w3-container.w3-blue {
     margin-bottom: 20px;
     text-align: center;
@@ -89,7 +151,7 @@ body.w3-margin-left.customLogin {
 
 /*Bar on top*/
 .customLogin #fra_header {
-    border-bottom: 1px solid #ccc;
+    border-bottom: 1px solid var(--borderLight);
     border-top: 0;
     display: flex;
     flex-wrap: wrap;
@@ -100,10 +162,12 @@ body.w3-margin-left.customLogin {
     height: 3em;
 }
 /*Bar on the bottom*/
+/*In the normal flow rather than position: fixed, which covered the bottom of the login box
+(the "5 numeric digits" hint) on shorter screens*/
 .customLogin #login_bottom {
-    position: fixed;
-    bottom: 0;
+    position: static;
     width: 100%;
+    margin-top: 2rem;
 }
 
 .customLogin  #login_bottom > div > div {
@@ -137,17 +201,47 @@ body.w3-margin-left.customLogin {
 body.customLoginColors .w3-blue {
     background-color: var(--primaryColor) !important;
 }
-/*Footer coolors*/
+/*Footer colours*/
 .customLoginColors td.customfooter {
-    background-color: #eaeaea82 !important;
-    color: #525252;
+    background-color: var(--footerBg) !important;
+    color: var(--txtMuted);
 }
 .customLoginColors td.customfooter > a:hover {
-    color: #c7501f !important;
+    color: var(--linkHover) !important;
 }
 /*Head bar*/
 .customLoginColors div.fra_inst, .customLoginColors div.fra_date {
-    color: #3a3737;
+    color: var(--txtBody);
+}
+/*Radio buttons (Student, Personnel, Other, Alumni)*/
+.customLoginColors [type=radio] {
+    accent-color: var(--primaryColor);
+}
+/*Hint under the pin*/
+.customLoginColors form[name="frmLogin"] input[name="pin"] + p {
+    color: var(--txtMuted);
+}
+/*Login: primary button*/
+.customLoginColors form[name="frmLogin"] [type=submit] {
+    color: var(--neutral-white) !important;
+    background-color: var(--primaryColor) !important;
+    border: 1px solid var(--primaryColor) !important;
+    font-weight: 600;
+}
+.customLoginColors form[name="frmLogin"] [type=submit]:hover {
+    color: var(--neutral-white) !important;
+    background-color: var(--primaryHigh) !important;
+    border-color: var(--primaryHigh) !important;
+}
+/*Forgot Pin, Change Pin, Request A Pin, Forgot Student Number: secondary buttons*/
+.customLoginColors form[name="frmLogin"] [type=button] {
+    color: var(--primaryColor) !important;
+    background-color: var(--neutral-white) !important;
+    border: 1px solid var(--primaryColor) !important;
+}
+.customLoginColors form[name="frmLogin"] [type=button]:hover {
+    color: var(--primaryColor) !important;
+    background-color: var(--primaryComp) !important;
 }
 /*Login buttons and hover*/
 .customLoginColors .w3-button:hover {
@@ -168,7 +262,7 @@ body.customLoginColors .w3-blue {
     margin: auto !important;
 }
 
-/*for small screeen*/
+/*For small screens*/
 @media (max-width: 1000px) {
     .customLogin h5 {
         font-size: 1.2em !important;

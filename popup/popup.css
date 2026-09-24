@@ -1,23 +1,27 @@
+@import "../content/css/variables.css"; /*WSU colours*/
+
 /*==Applicable to the popup, where the extension config lies==*/
 
 .no-border{
     border: 0 !important;
 }
-/*Global colors*/
-:root {
-    --primary: #1872b9;
-    --secondary: #31353D;
-    --highlighted: #0dcaf042;
-    --highlighted50: #0dcaf01a;
-}
-
 body{
-    width: 500px;
-    height: 500px;
+    width: 360px;
+    margin: 0;
+    color: var(--txtBody);
 }
 
-/*Utility clases for formating*/
-/*Alighments*/
+/*Same padding on every tab*/
+.popupWrap {
+    padding: 12px 16px 16px 16px;
+}
+
+.tab-content {
+    padding-top: 16px;
+}
+
+/*Utility classes for formatting*/
+/*Alignments*/
 .txtRight {
     text-align: right !important;
 }
@@ -26,17 +30,17 @@ body{
     text-align: left !important;
 }
 
-/*Background colors*/
+/*Background colours*/
 .bgHigh{
-    background-color: var(--highlighted) !important;
+    background-color: var(--popupHighlight) !important;
 }
 .bgHigh50 {
-    background-color: var(--highlighted50) !important;
+    background-color: var(--popupHighlight50) !important;
 }
 
-/*Text colors*/
+/*Text colours*/
 .ctGrey50 {
-    color: grey;
+    color: var(--txtMuted);
 }
 
 /*text sizes*/
@@ -61,6 +65,14 @@ body{
     padding: 0.2rem 0.6rem !important;
 }
 /*images*/
+/*New WSU logo, keep its aspect ratio*/
+.wsuLogo {
+    display: block;
+    width: 180px;
+    height: auto;
+    margin-bottom: 16px;
+}
+
 .card-header img {
     float: left;
     margin-right: 10px;
@@ -70,3 +82,156 @@ body{
     text-align: left !important;
 }
 
+
+/*== Home and Contact tabs ==*/
+.appTitle {
+    display: flex;
+    align-items: baseline;
+    gap: 8px;
+}
+
+.appName {
+    margin: 0;
+    font-size: 1.4rem;
+    font-weight: 700;
+    color: var(--primaryColor);
+}
+
+.appVersion, .popupFooter {
+    font-size: 0.85rem;
+    color: var(--txtMuted);
+}
+
+.tagline {
+    margin: 4px 0 0 0;
+    color: var(--txtMuted);
+}
+
+.ochreRule {
+    margin: 16px 0;
+    border: 0;
+    border-top: 2px solid var(--wsu-ochre);
+    opacity: 1;
+}
+
+.author {
+    margin-bottom: 16px;
+    font-size: 0.9rem;
+    line-height: 1.4;
+}
+
+.author strong {
+    color: var(--primaryColor);
+}
+
+.contactLinks {
+    margin: 0 0 16px 0;
+    padding: 0;
+    list-style: none;
+}
+
+.contactLinks li + li {
+    margin-top: 10px;
+}
+
+.contactLinks a {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.contactLinks svg {
+    flex: none;
+    width: 18px;
+    height: 18px;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 2;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+}
+
+.popupFooter {
+    margin: 0;
+    padding-top: 12px;
+    border-top: 1px solid var(--borderLight);
+}
+
+/*== WSU colours for the Bootstrap controls ==*/
+a {
+    color: var(--primaryColor);
+}
+
+a:hover {
+    color: var(--linkHover);
+}
+
+/*Tabs: maroon underline on the active tab*/
+.nav-tabs {
+    border-bottom: 1px solid var(--borderLight);
+}
+
+.nav-tabs .nav-link {
+    border: 0;
+    border-bottom: 3px solid transparent;
+    border-radius: 0;
+    color: var(--txtMuted);
+}
+
+.nav-tabs .nav-link:hover, .nav-tabs .nav-link:focus {
+    border-color: transparent;
+    border-bottom-color: var(--borderLight);
+    color: var(--primaryColor);
+}
+
+.nav-tabs .nav-link.active {
+    border-bottom-color: var(--primaryColor);
+    background-color: transparent;
+    color: var(--primaryColor);
+    font-weight: 600;
+}
+
+/*Switches*/
+.form-check-input {
+    border-color: var(--inputBorder);
+}
+
+.form-switch .form-check-input,
+.form-switch .form-check-input:focus {
+    background-image: var(--switchKnobOff);
+}
+
+.form-check-input:checked {
+    background-color: var(--primaryColor);
+    border-color: var(--primaryColor);
+}
+
+.form-switch .form-check-input:checked,
+.form-switch .form-check-input:checked:focus {
+    background-image: var(--switchKnobOn);
+}
+
+/*Accordion (Config tab)*/
+.accordion-button:not(.collapsed) {
+    color: var(--primaryColor);
+    background-color: var(--primaryComp);
+    box-shadow: inset 0 -1px 0 var(--borderLight);
+}
+
+.accordion-button:not(.collapsed)::after {
+    background-image: var(--accordionIconOpen);
+}
+
+/*Ochre focus ring on every control*/
+.nav-link:focus-visible,
+.accordion-button:focus,
+.form-check-input:focus,
+a:focus-visible {
+    border-color: var(--focusColor);
+    outline: 0;
+    box-shadow: var(--focusRing);
+}
+
+.nav-tabs .nav-link:focus:not(:focus-visible) {
+    box-shadow: none;
+}

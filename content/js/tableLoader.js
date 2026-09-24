@@ -38,7 +38,7 @@ if ($(subjectTable).length > 0) {
                 toolTip[i].setAttribute("Title", "ET - End of Didactic Teaching Test");
                 break;
             case "NW":
-                toolTip[i].setAttribute("Title", "NW - Learing Need Worksheet");
+                toolTip[i].setAttribute("Title", "NW - Learning Need Worksheet");
                 break;
             case "OS":
                 toolTip[i].setAttribute("Title", "OS - OSCE Mark");

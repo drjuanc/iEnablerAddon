@@ -1,7 +1,7 @@
 {
-  "name": "Pimp my iEnabler",
-  "description": "Making the iEnabler interface a bit more user frindly",
-  "version": "1.0",
+  "name": "iEnablerAddon",
+  "description": "Improves the look and usability of the Walter Sisulu University ITS iEnabler portal",
+  "version": "2.0.0",
   "author": "Dr Alonso",
   "manifest_version": 3,
 
@@ -14,7 +14,6 @@
 
   "permissions": [
     "storage",
-    "tabs",
     "activeTab",
     "notifications",
     "scripting"
@@ -28,7 +27,7 @@
   },
 
   "action": {
-    "default_title": "Pimp my iEnabler",
+    "default_title": "iEnablerAddon",
     "default_icon": "assets/icons/icon.png",
     "default_popup": "popup/popup.html"
   },
@@ -39,13 +38,11 @@
         "content/css/variables.css",
         "content/css/framef1.css",
         "content/css/framef3.css",
-        "/assets/fonts/RobotoCondensed-Regular.ttf",
-        "/assets/fonts/RobotoCondensed-Bold.ttf",
-        "/assets/fonts/NotoSans-Regular.ttf",
-        "/assets/fonts/Cabin-Regular.ttf",
-        "/assets/pics/wsulogo.jpg",
-        "/assets/pics/wsulogoinv.jpg",
-        "/assets/pics/wsuinv.png",
+        "assets/fonts/RobotoCondensed-Regular.ttf",
+        "assets/fonts/RobotoCondensed-Bold.ttf",
+        "assets/fonts/NotoSans-Regular.ttf",
+        "assets/fonts/Cabin-Regular.ttf",
+        "assets/pics/wsu-logo-new.png",
         "lib/css/bootstrap.min.css",
         "lib/css/bootstrap.min.css.map",
         "lib/css/bootstrap-table.min.css",
@@ -67,6 +64,7 @@
         "https://ieweb.wsu.ac.za/*" 
       ],
       "css": [
+        "content/css/variables.css",
         "content/css/content.css",
         "content/css/login.css",
         "lib/css/bootstrap.css",

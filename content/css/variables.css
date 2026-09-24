@@ -1,35 +1,97 @@
-/*Defining colors and spaces in variables*/
+/*Defining colours and fonts in variables*/
+/*Injected into every iEnabler page as a content-script stylesheet (see manifest.json)
+and @imported by framef1.css, framef3.css and popup.css.
+No other stylesheet should hard-code a colour: add a variable here instead.*/
 :root {
-    --primaryColor: #0b603c;
-    --primaryComp: #dffff2;
-    --txtPrimaryMatch: #c2e3d6;
-    --txtPrimary03: rgb(194 227 214 / 30%);
-    --primaryActive: #2c7759;
-    --primaryHigh: #094f34;
-    --complement: #eaeaea;
-    --highlighted: #18221e;
-    --complementHigh: #c7501f;
-    --complementMed: #ffe6ac;
-    --allGrey: #c9c9c9;
-    --boxShadow: rgb(11 96 60 / 40%);
+    /*== WSU palette ==*/
+    --wsu-maroon: #501010;
+    --wsu-maroon-dark: #3C0C0C;
+    --wsu-maroon-light: #6B1A1A;
+    --wsu-ochre: #C88028;         /*White text on ochre fails AA (3.2:1), use maroon text (4.6:1)*/
+
+    /*Secondary accents sampled from the new WSU logo*/
+    --wsu-red: #A02124;           /*White text 7.7:1*/
+    --wsu-orange: #B45736;        /*White text 4.8:1*/
+    /*Decoration only (borders, stripes, icons), never as text or text background*/
+    --wsu-purple: #A080A8;
+    --wsu-olive: #8E7951;
+    --wsu-coral: #C35E54;
+    --wsu-sage: #546A55;
+
+    /*Tints*/
+    --wsu-cream: #F7EFE6;
+    --wsu-ochre-tint: #F8E9D6;
+
+    /*Neutrals*/
+    --neutral-white: #FFFFFF;
+    --neutral-100: #F4F4F4;
+    --neutral-200: #EAEAEA;
+    --neutral-300: #CCCCCC;
+    --neutral-500: #767676;       /*Lightest grey with 4.5:1 on white, for input borders*/
+    --neutral-600: #525252;
+    --neutral-900: #212529;
+
+    /*== Roles used by the stylesheets ==*/
+    --primaryColor: var(--wsu-maroon);
+    --primaryComp: var(--wsu-cream);
+    --txtPrimaryMatch: var(--wsu-cream);            /*Text on --primaryColor*/
+    --txtPrimary03: rgb(248 233 214 / 60%);         /*--wsu-ochre-tint at 60%, table row hover*/
+    --primaryActive: var(--wsu-maroon-light);
+    --primaryHigh: var(--wsu-maroon-dark);
+    --complement: var(--neutral-200);
+    --highlighted: var(--wsu-maroon-dark);
+    --complementHigh: var(--wsu-orange);
+    --complementMed: var(--wsu-ochre-tint);
+    --allGrey: var(--neutral-300);
+    --boxShadow: rgb(80 16 16 / 40%);               /*--wsu-maroon at 40%*/
+    --focusColor: var(--wsu-ochre);
+    --linkHover: var(--wsu-red);
+    --borderLight: var(--neutral-300);
+    --inputBorder: var(--neutral-500);
+    --focusRing: 0 0 0 3px var(--focusColor);
+    --txtBody: var(--neutral-900);
+    --txtMuted: var(--neutral-600);
+    --footerBg: rgb(234 234 234 / 51%);             /*--neutral-200 at 51%*/
+    --popupHighlight: rgb(200 128 40 / 26%);        /*--wsu-ochre at 26%*/
+    --popupHighlight50: rgb(200 128 40 / 10%);      /*--wsu-ochre at 10%*/
+
+    /*Bootstrap draws some control icons as SVG images, which cannot read a variable, so the colour is in the SVG*/
+    /*Switch knob when off: --neutral-500 (%23767676)*/
+    --switchKnobOff: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='-4 -4 8 8'%3e%3ccircle r='3' fill='%23767676'/%3e%3c/svg%3e");
+    /*Switch knob when on: --neutral-white (%23FFFFFF)*/
+    --switchKnobOn: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='-4 -4 8 8'%3e%3ccircle r='3' fill='%23FFFFFF'/%3e%3c/svg%3e");
+    /*Open accordion chevron: --wsu-maroon (%23501010)*/
+    --accordionIconOpen: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' fill='%23501010'%3e%3cpath fill-rule='evenodd' d='M1.646 4.646a.5.5 0 0 1 .708 0L8 10.293l5.646-5.647a.5.5 0 0 1 .708.708l-6 6a.5.5 0 0 1-.708 0l-6-6a.5.5 0 0 1 0-.708z'/%3e%3c/svg%3e");
+
+    /*Logo on dark backgrounds (main menu sidebar).
+    There is no official reversed logo yet, so the full-colour logo is turned white with a filter.
+    When an official light logo arrives: set WSU_LOGO_ON_DARK in content/content.js to the new file
+    and change this to 'none'.*/
+    --logoOnDarkFilter: brightness(0) invert(1);
 }
 
+/*Fonts: the chrome-extension URL works when this file is injected as a content-script stylesheet,
+the root-relative URL is the fallback when it is loaded from the extension itself*/
 @font-face {
     font-family: robotoCondense;
     font-weight: 400;
-    src: url('/assets/fonts/RobotoCondensed-Regular.ttf');
+    src: url('chrome-extension://__MSG_@@extension_id__/assets/fonts/RobotoCondensed-Regular.ttf'),
+         url('/assets/fonts/RobotoCondensed-Regular.ttf');
 }
 @font-face {
     font-family: robotoCondense;
     font-weight: 700;
-    src: url('/assets/fonts/RobotoCondensed-Bold.ttf');
+    src: url('chrome-extension://__MSG_@@extension_id__/assets/fonts/RobotoCondensed-Bold.ttf'),
+         url('/assets/fonts/RobotoCondensed-Bold.ttf');
 }
 
 @font-face {
     font-family: NotoSans;
-    src: url('/assets/fonts/NotoSans-Regular.ttf');
+    src: url('chrome-extension://__MSG_@@extension_id__/assets/fonts/NotoSans-Regular.ttf'),
+         url('/assets/fonts/NotoSans-Regular.ttf');
 }
 @font-face {
     font-family: Cabin;
-    src: url('/assets/fonts/Cabin-Regular.ttf');
+    src: url('chrome-extension://__MSG_@@extension_id__/assets/fonts/Cabin-Regular.ttf'),
+         url('/assets/fonts/Cabin-Regular.ttf');
 }

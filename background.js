@@ -1,57 +1,68 @@
-let config;
+//Default configuration. The popup and content scripts read it by index, so keep the order.
+const DEFAULT_CONFIG = [
+    ['customTheme', true],       //[0]
+    ['customColors', true],      //[1]
+    ['wgca', true],              //[2]
+    ['customLogin', true],       //[3]
+    ['customLoginColors', true], //[4]
+    ['fixWSULogo', true],       //[5]
+    ['personnelDef', true],       //[6]
+    ['cleanLogin', true],       //[7]
+    ['otherConfg', false]
 
+];
 
 chrome.runtime.onInstalled.addListener(function (details) {
-    //On install save the config in storage
-    //Set the default configuration in an array
-    config = [
-        ['customTheme', true],       //[0]
-        ['customColors', true],      //[1]
-        ['wgca', true],              //[2]
-        ['customLogin', true],       //[3]
-        ['customLoginColors', true], //[4]
-        ['fixWSULogo', true],       //[5]
-        ['personnelDef', true],       //[6]
-        ['cleanLogin', true],       //[7]
-        ['otherConfg', false]
+    if (details.reason === 'install') {
+        //On install save the default config in storage
+        storeConfig(DEFAULT_CONFIG);
 
-    ];
-
-    storeConfig(config);
-
+    } else if (details.reason === 'update') {
+        //On update keep the user's settings and only add the options that are missing
+        chrome.storage.sync.get('config', function (result) {
+            storeConfig(mergeConfig(result.config));
+        });
+    }
 });
+
+//Build the config in the default order, keeping every value the user already has
+function mergeConfig(storedConfig) {
+    if (!Array.isArray(storedConfig)) return DEFAULT_CONFIG;
+
+    let merged = DEFAULT_CONFIG.map(function ([key, value]) {
+        let existing = storedConfig.find(item => Array.isArray(item) && item[0] === key);
+        return existing ? [key, existing[1]] : [key, value];
+    });
+
+    //Keep any stored options that are no longer in the defaults, so nothing is lost
+    storedConfig.forEach(function (item) {
+        if (Array.isArray(item) && !DEFAULT_CONFIG.some(([key]) => key === item[0])) merged.push(item);
+    });
+
+    return merged;
+}
 
 /*Stores the config in the user chrome profile, this applies to all browser where the extension is active*/
 function storeConfig(objConfig) {
-    
-    for (let config in objConfig) {
-
-        //console.log(config, objConfig[config]);
-        chrome.storage.sync.set({ config: objConfig }, function () {
-
-        });        
-    };  
-
+    chrome.storage.sync.set({ config: objConfig });
 }
 
 
 
 //Get current Tab in order to insert the resources
 function insertScript(code) {
-    chrome.windows.getCurrent(function (currentWindow) {
-        chrome.tabs.query({ active: true, windowId: currentWindow.id }, function (activeTabs) {
-            activeTabs.map(function (tab) {
+    //lastFocusedWindow rather than windows.getCurrent, which has no meaning in a service worker
+    chrome.tabs.query({ active: true, lastFocusedWindow: true }, function (activeTabs) {
+        activeTabs.forEach(function (tab) {
 
-                chrome.scripting.executeScript(
-                    {
-                        target: { tabId: tab.id, allFrames: true },
-                        //files: [script],
-                        func: code
-                    },
-                    (injectionResults) => {
-                        //console.log('passed');
-                    });
-            });
+            chrome.scripting.executeScript(
+                {
+                    target: { tabId: tab.id, allFrames: true },
+                    func: code
+                },
+                () => {
+                    if (chrome.runtime.lastError) console.log(chrome.runtime.lastError.message);
+                });
         });
     });
 
@@ -59,7 +70,7 @@ function insertScript(code) {
 
 
 /*Listening  messages from the scripts*/
-chrome.runtime.onMessage.addListener(async function (request, sender, sendResponse) {
+chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
 
     try {
         switch (request.action) {
@@ -130,37 +141,71 @@ chrome.runtime.onMessage.addListener(async function (request, sender, sendRespon
     }
 })
 
-/*=====Funtions to be inserted in the file=====*/
-//Replace WSU low-res logo for a high-res one, the argument is the size in pixels of the new logo
+/*=====Functions to be inserted in the page=====*/
+/*These run in the page, so they cannot use anything else in this file*/
+//Replace the low-res WSU logo with the new one. Keep the width in step with fixWSULogo in content/content.js
 function fixWSULogo() {
-
-    //document.getElementsByName('numtype')[1].checked = true;  
     var wsuLogo = document.getElementsByTagName("img")[0];
-    wsuLogo.width = 500;
-    wsuLogo.src = chrome.runtime.getURL('assets/pics/wsulogo.jpg');
-  
+    if (!wsuLogo) return;
+    wsuLogo.removeAttribute('height');
+    wsuLogo.width = 360;
+    wsuLogo.style.height = 'auto';
+    wsuLogo.style.maxWidth = '90%';
+    wsuLogo.src = chrome.runtime.getURL('assets/pics/wsu-logo-new.png');
 }
 
-//Bring back the original crapy low-res logo
-function unFixWSULogo(logoHeight) {
+//Bring back the original low-res logo
+function unFixWSULogo() {
     var wsuLogo = document.getElementsByTagName("img")[0];
+    if (!wsuLogo) return;
+    wsuLogo.removeAttribute('width');
+    wsuLogo.style.height = '';
+    wsuLogo.style.maxWidth = '';
     wsuLogo.height = 200;
     wsuLogo.src = 'https://ieweb.wsu.ac.za/itsimages/InsImg.gif'
 
 }
 
 
-//add the class 'customLogin' to the body to ebale the new theme
+//add the class 'customLogin' to the body to enable the new theme
 function addCustomLogin() {
     document.body.classList.add("customLogin");
+
+    //Login page wording, same as fixLoginTexts in content/content.js. Keep both in step.
+    document.querySelectorAll('header.w3-blue h5').forEach(function (header) {
+        if (header.textContent.trim() == 'Registered Users: Login Credentials') {
+            header.dataset.ienablerOriginal = header.textContent;
+            header.textContent = 'Login Credentials';
+        }
+    });
+
+    var pin = document.querySelector('form[name="frmLogin"] input[name="pin"]');
+    var hint = pin ? pin.nextElementSibling : null;
+    var hintText = hint && hint.tagName == 'P' ? hint.firstChild : null;
+    if (hintText && hintText.nodeType == Node.TEXT_NODE && hintText.nodeValue.includes('digits.Do')) {
+        hint.dataset.ienablerOriginal = hintText.nodeValue;
+        hintText.nodeValue = hintText.nodeValue.replace('digits.Do', 'digits. Do');
+    }
 }
 
 //remove the class 'customLogin' bringing back the old theme
 function removeCustomLogin() {
     document.body.classList.remove('customLogin');
+
+    //Bring back the original login wording
+    document.querySelectorAll('header.w3-blue h5[data-ienabler-original]').forEach(function (header) {
+        header.textContent = header.dataset.ienablerOriginal;
+        delete header.dataset.ienablerOriginal;
+    });
+
+    var hint = document.querySelector('form[name="frmLogin"] p[data-ienabler-original]');
+    if (hint && hint.firstChild && hint.firstChild.nodeType == Node.TEXT_NODE) {
+        hint.firstChild.nodeValue = hint.dataset.ienablerOriginal;
+        delete hint.dataset.ienablerOriginal;
+    }
 }
 
-//add the class 'customLoginColors' to the body to ebale the new theme
+//add the class 'customLoginColors' to the body to enable the new theme
 function addCustomLoginColors() {
     document.body.classList.add("customLoginColors");
 }
@@ -170,7 +215,7 @@ function removeCustomLoginColors() {
     document.body.classList.remove('customLoginColors');
 }
 
-//Personel as default
+//Personnel as default
 function personnelDef() {
     document.getElementsByName('numtype')[1].checked = true;
 }
