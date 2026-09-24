@@ -45,12 +45,17 @@
                             <label for="wcga">Accessibility enhancements</label>
                             <p class="hint" id="wcgaHint">Clearer focus outlines, larger text and click areas, and better keyboard and screen reader support.</p>
                         </div>
+                        <div class="setting">
+                            <input type="checkbox" role="switch" class="switch" id="hideFooter" aria-describedby="hideFooterHint">
+                            <label for="hideFooter">Hide the page footer</label>
+                            <p class="hint" id="hideFooterHint">Removes the bar of portal links (Contact Us, Disclaimer and others) at the bottom of the page, giving more room.</p>
+                        </div>
                     </div>
                     <div class="card">
-                        <!--Also sets this window's theme, even while the modern look is off (see popup.js)-->
+                        <!--Always enabled: it also sets this window's theme and the login page (see popup.js)-->
                         <fieldset id="colourSchemeGroup" aria-describedby="colourSchemeHint">
                             <legend class="cardTitle">Colour scheme</legend>
-                            <p class="hint" id="colourSchemeHint">Choose light or dark for the iEnabler pages and this window. Automatic follows your device's setting.</p>
+                            <p class="hint" id="colourSchemeHint">Light or dark for this window and the iEnabler pages. Automatic follows your device. The pages need &ldquo;Use the modern look&rdquo; on (the login page: &ldquo;Use the improved login page&rdquo;).</p>
                             <div class="segmented">
                                 <input type="radio" name="colourScheme" id="colourSchemeAuto" value="auto" checked>
                                 <label for="colourSchemeAuto">Automatic</label>

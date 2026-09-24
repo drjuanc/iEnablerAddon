@@ -20,6 +20,7 @@
     //The device's light or dark setting, for the "Automatic" colour scheme
     const DARK_DEVICE = window.matchMedia('(prefers-color-scheme: dark)');
     let lastConfig = null; //Settings last applied, to apply again when the device setting changes
+    let loginScheme = 'auto'; //Colour scheme on the login page, see updateLoginDark
 
     //Tooltips for the mark type codes in the subjects table
     const MARK_TYPES = {
@@ -92,6 +93,9 @@
 
             //Select the user type by default
             if ((arrConfig[6][0] == 'userTypeDef' && arrConfig[6][1]) && (arrConfig[3][1]) && arrConfig[9] && arrConfig[9][0] == 'userType') selectUserType(arrConfig[9][1]);
+
+            //Dark colour scheme, with the improved login page on
+            setLoginScheme(arrConfig);
         }
 
     });
@@ -215,10 +219,38 @@
         if (radio) radio.click();
     }
 
-    //Used by the functions background.js injects when the popup settings change
+    /*=== Login page: dark colour scheme ===*/
+    //Dark while "Use the improved login page" is on and the colour scheme is Dark, or Automatic on a
+    //device set to dark (styles in dark.css). The customLogin class on <body> tells whether the
+    //improved login page is on: it is set when the page loads and live by background.js
+    function setLoginScheme(config) {
+        loginScheme = Array.isArray(config) && Array.isArray(config[10]) && config[10][0] == 'colourScheme' ? config[10][1] : 'auto';
+        updateLoginDark();
+    }
+
+    function updateLoginDark() {
+        let on = document.body.classList.contains('customLogin') && (loginScheme == 'dark' || (loginScheme == 'auto' && DARK_DEVICE.matches));
+        document.documentElement.classList.toggle('ie-dark', on);
+    }
+
+    if (currentURl.includes('mi_login')) {
+        chrome.storage.onChanged.addListener(function (changes, areaName) {
+            if (areaName == 'sync' && changes.config && Array.isArray(changes.config.newValue)) setLoginScheme(changes.config.newValue);
+        });
+        DARK_DEVICE.addEventListener('change', updateLoginDark);
+    }
+
+    //Used by the functions background.js injects when the popup settings change. Switching the
+    //improved login page on or off also switches the dark colour scheme
     window.iEnablerLogin = {
-        apply: fixLoginTexts,
-        restore: restoreLoginTexts,
+        apply: function () {
+            fixLoginTexts();
+            updateLoginDark();
+        },
+        restore: function () {
+            restoreLoginTexts();
+            updateLoginDark();
+        },
         selectUserType: selectUserType
     };
 
@@ -251,7 +283,8 @@
             theme: theme,
             colours: theme && entry(1, 'customColors') === true,
             a11y: theme && entry(2, 'wgca') === true,
-            dark: theme && (scheme == 'dark' || (scheme == 'auto' && DARK_DEVICE.matches))
+            dark: theme && (scheme == 'dark' || (scheme == 'auto' && DARK_DEVICE.matches)),
+            noFooter: theme && entry(11, 'hideFooter') === true
         };
     }
 
@@ -284,9 +317,10 @@
             applied.theme = settings.theme;
         }
 
-        //Colours and the dark colour scheme are CSS only
+        //Colours, the dark colour scheme and hiding the footer are CSS only
         root.classList.toggle('ie-colours', settings.colours);
         root.classList.toggle('ie-dark', settings.dark);
+        root.classList.toggle('ie-no-footer', settings.noFooter);
 
         if (settings.a11y && !applied.a11y) {
             root.classList.add('ie-a11y');

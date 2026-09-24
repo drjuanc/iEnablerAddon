@@ -13,7 +13,8 @@ const DEFAULT_CONFIG = [
     ['cleanLogin', true],       //[7]
     ['otherConfg', false],       //[8]
     ['userType', 'S'],           //[9] S student, P personnel, A alumni, O other (values of the login radios)
-    ['colourScheme', 'auto']     //[10] auto (follows the device), light or dark: the popup always, the iEnabler pages with the modern look
+    ['colourScheme', 'auto'],    //[10] auto (follows the device), light or dark: the popup always, the iEnabler pages with the modern look
+    ['hideFooter', false]        //[11] hide the bar of portal links at the bottom of the main page (with the modern look)
 
 ];
 

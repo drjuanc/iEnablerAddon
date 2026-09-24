@@ -9,8 +9,8 @@ Browser extension (Chrome/Edge) that improves the look and usability of the Walt
 - `config.js`: default settings and `mergeConfig`, shared by `background.js` (importScripts) and the popup
 - `content/`: content scripts injected into iEnabler pages
   - `content.js`: login page, and the main menu page and its frames (F1 menu, F3 content), including the subjects table. Theme, colours, accessibility and the dark colour scheme (`ie-dark`) apply and revert live via `chrome.storage.onChanged`
-  - `css/`: styling for login page, main menu (`content.css`), frames (`framef1.css`, `framef3.css`), `accessibility.css` and shared variables
-- `popup/`: extension popup (`popup.html`, `popup.js`, `popup.css`, `theme.js`), plain HTML, CSS and JS. Settings and About tabs. The Colour scheme setting (Automatic, Light, Dark; config `colourScheme`) always sets the popup's theme (`--pop*` roles in `content/css/variables.css`) and, with the modern look on, adds `ie-dark` to the iEnabler pages
+  - `css/`: styling for login page, main menu (`content.css`), frames (`framef1.css`, `framef3.css`), `accessibility.css`, `dark.css` (dark colour scheme, `html.ie-dark`, injected last) and shared variables
+- `popup/`: extension popup (`popup.html`, `popup.js`, `popup.css`, `theme.js`), plain HTML, CSS and JS. Settings and About tabs. The Colour scheme setting (Automatic, Light, Dark; config `colourScheme`) always sets the popup's theme (`--pop*` roles in `content/css/variables.css`) and, adds `ie-dark` to the iEnabler pages (main menu: with the modern look on; login page: with the improved login page on)
 - `assets/`: fonts, icons (16–128 px) and the WSU logo (`pics/wsu-logo-new.png`)
 - `lib/`: third-party libraries. Do not edit these files.
   - Login page: `bootstrap.css` (content-script stylesheet, `*mi_login*` only)

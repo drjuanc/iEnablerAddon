@@ -65,6 +65,38 @@ Frame F1 is styled in framef1.css, frame F3 in framef3.css and accessibility in 
     }
 }
 
+/*=== Hide the page footer (ie-no-footer) ===*/
+/*The footer goes, and so does the white strip above it: the gap under the content frame (an
+inline iframe) and the footer's own top margin*/
+.ie-theme.ie-no-footer.ie-top #footer {
+    display: none;
+}
+
+.ie-theme.ie-no-footer.ie-top #F3 {
+    display: block;
+}
+
+/*The content frame then grows into the freed space, down to the bottom of the window (never
+shorter than the portal's 780px). Large screens only: on small ones the portal's own top bar
+floats in this column, and nothing there should move*/
+@media (min-width: 993px) {
+    .ie-theme.ie-no-footer.ie-top .w3-main {
+        display: flex;
+        flex-direction: column;
+        min-height: 100vh;
+    }
+
+    .ie-theme.ie-no-footer.ie-top .w3-main > .w3-display-container {
+        flex: 1 0 auto;
+        display: flex;
+        flex-direction: column;
+    }
+
+    .ie-theme.ie-no-footer.ie-top #F3 {
+        flex: 1 0 auto;
+    }
+}
+
 /*=== Custom colours ===*/
 .ie-colours.ie-top nav.w3-sidebar {
     background-color: var(--primaryColor) !important;

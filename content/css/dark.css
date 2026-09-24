@@ -1,0 +1,560 @@
+/*Colours are defined in variables.css, injected before this file (see manifest.json)*/
+
+/*Dark colour scheme for the iEnabler pages. Injected last, so it goes over every other stylesheet.
+content/content.js adds 'ie-dark' to <html>:
+- main menu page and its frames (ie-top, ie-f1, ie-f3): with "Use the modern look" on
+- login page: with "Use the improved login page" on (body.customLogin)
+and the Colour scheme set to Dark, or Automatic on a device set to dark.
+The light stylesheets are untouched: every rule here is one class stronger than the light rule it
+replaces, with !important because many light rules (and the portal's w3.css) use it.
+Screen only: printed pages stay light.*/
+
+@media screen {
+
+/*=== Palette ===*/
+/*One set of --dk-* roles for the rules below: the neutral family by default, the WSU (maroon)
+family with the WSU colours on. Maroon is only ever a background here, never text*/
+html.ie-dark {
+    color-scheme: dark;
+    --dk-bg: var(--darkN-bg);
+    --dk-surface: var(--darkN-surface);
+    --dk-raised: var(--darkN-raised);
+    --dk-border: var(--darkN-border);
+    --dk-text: var(--darkN-text);
+    --dk-muted: var(--darkN-muted);
+    --dk-link: var(--darkN-link);
+    --dk-link-hover: var(--darkN-link-hover);
+    --dk-control: var(--darkN-control);
+    --dk-row-hover: var(--darkN-row-hover);
+    --dk-notice: var(--darkN-raised);
+    --dk-danger: var(--darkN-danger);
+    --dk-ok: var(--darkN-ok);
+    --dk-divider: var(--darkN-divider);
+    --dk-stripe: var(--darkN-stripe);
+    --dk-icon-panel: var(--darkN-text);       /*Behind the portal's black GIF icons*/
+    --dk-rule: var(--darkN-control);          /*Line under table headers*/
+    --dk-primary: var(--darkN-text);          /*Main button: light, with --dk-bg text*/
+    --dk-primary-hover: var(--neutral-white);
+    --dk-banner: var(--darkN-raised);         /*Page title bar, login card headers, pop-up menu title*/
+    --dk-banner-text: var(--darkN-text);
+    --dk-popup-bar: var(--neutral-600);       /*Pop-up frame and title bar, as in light: text 6.3:1*/
+    --dk-sidebar: var(--darkN-surface);
+    --dk-focus: var(--darkN-link);
+}
+
+html.ie-dark.ie-colours, html.ie-dark body.customLoginColors {
+    --dk-bg: var(--dark-bg);
+    --dk-surface: var(--dark-surface);
+    --dk-raised: var(--dark-open);
+    --dk-border: var(--dark-border);
+    --dk-text: var(--dark-text);
+    --dk-muted: var(--dark-muted);
+    --dk-link: var(--dark-accent);
+    --dk-link-hover: var(--dark-link-hover);
+    --dk-control: var(--dark-control);
+    --dk-row-hover: var(--dark-row-hover);
+    --dk-notice: var(--dark-notice);
+    --dk-danger: var(--dark-danger);
+    --dk-ok: var(--dark-ok);
+    --dk-divider: var(--dark-divider);
+    --dk-stripe: var(--dark-stripe);
+    --dk-icon-panel: var(--wsu-cream);
+    --dk-rule: var(--dark-accent);
+    --dk-primary: var(--dark-accent);
+    --dk-primary-hover: var(--dark-link-hover);
+    --dk-banner: var(--wsu-maroon);           /*Cream text on it 13.0:1*/
+    --dk-banner-text: var(--wsu-cream);
+    --dk-popup-bar: var(--wsu-maroon);
+    --dk-sidebar: var(--wsu-maroon);
+    --dk-focus: var(--dark-accent);
+}
+
+/*=== Shared by every dark page ===*/
+/*The portal's own red (Note:, mandatory *; its #ff4040 is only 4.1:1 on dark rows), also over accessibility.css and the general text
+colour rules below: :not(#ie-dark-boost) adds the weight of an id*/
+html.ie-dark :is(font[color="#FF0000" i], font[color="red" i], font[color="ff4040" i], font[color="#ff4040" i], .mandatory_fld, .ErrorDiv, .ISMA_error, td.rlerror, td.mrerror):not(#ie-dark-boost) {
+    color: var(--dk-danger) !important;
+}
+
+/*The portal's green "OK" message*/
+html.ie-dark div.ISMA_ok:not(#ie-dark-boost) {
+    color: var(--dk-ok) !important;
+}
+
+html.ie-dark .text-muted {
+    color: var(--dk-muted) !important;
+}
+
+/*Accessibility focus ring: the maroon inner ring cannot be seen on dark, so a dark gap instead*/
+html.ie-dark.ie-a11y :focus-visible:not(#ie-a11y-boost) {
+    outline-color: var(--dk-focus) !important;
+    box-shadow: 0 0 0 2px var(--dk-bg) !important;
+}
+
+/*=== Main menu page (ie-top) ===*/
+html.ie-dark.ie-theme.ie-top body, html.ie-dark.ie-theme.ie-top .w3-main {
+    color: var(--dk-text) !important;
+    background-color: var(--dk-bg) !important;
+}
+
+/*Sidebar: maroon with the WSU colours (as in light), dark grey without*/
+html.ie-dark.ie-theme.ie-top nav.w3-sidebar {
+    background-color: var(--dk-sidebar) !important;
+}
+
+/*The new logo is white on either sidebar*/
+html.ie-dark.ie-theme.ie-top .wsuLogoOnDark {
+    filter: var(--logoOnDarkFilter);
+}
+
+/*Header bar with the university name and date: grey #EAEAEA with black lines in the portal's
+its.css. On any page that has it (main menu, content frame, login page)*/
+:is(html.ie-dark.ie-theme.ie-top, html.ie-dark.ie-theme.ie-f3, html.ie-dark body.customLogin) :is(#fra_header, div.fra_header) {
+    background-color: var(--dk-bg) !important;
+    border-top-color: var(--dk-border) !important;
+    border-bottom-color: var(--dk-border) !important;
+}
+
+:is(html.ie-dark.ie-theme.ie-top, html.ie-dark.ie-theme.ie-f3, html.ie-dark body.customLogin) :is(#fra_header, div.fra_header, .fra_inst, .fra_date) * ,
+:is(html.ie-dark.ie-theme.ie-top, html.ie-dark.ie-theme.ie-f3, html.ie-dark body.customLogin) :is(#fra_header, div.fra_header, .fra_inst, .fra_date) {
+    color: var(--dk-text) !important;
+    background-color: transparent;
+}
+
+html.ie-dark.ie-theme.ie-top :is(#fra_header, div.fra_header) {
+    background-color: var(--dk-bg) !important;
+}
+
+/*Footer (when shown): the portal paints its link bar light grey (bgcolor and its.css)*/
+html.ie-dark.ie-theme.ie-top :is(#footer, #fra_footer, td.customfooter) {
+    color: var(--dk-muted) !important;
+    background-color: var(--dk-surface) !important;
+}
+
+/*The top bar on small screens, and other light W3.CSS areas*/
+html.ie-dark.ie-theme.ie-top :is(footer, .w3-light-grey, .w3-light-blue, .w3-white:not(nav)) {
+    color: var(--dk-muted) !important;
+    background-color: var(--dk-surface) !important;
+}
+
+/*The skip link keeps its cream on maroon (accessibility.css)*/
+html.ie-dark.ie-theme.ie-top a:not(.ienablerSkip) {
+    color: var(--dk-link) !important;
+}
+
+/*=== Menu frame (ie-f1) ===*/
+/*With the WSU colours the menu is already cream on maroon, so only the neutral look changes*/
+html.ie-dark.ie-theme.ie-f1:not(.ie-colours) :is(a, a:link, a:visited) {
+    color: var(--dk-text) !important;
+}
+
+html.ie-dark.ie-theme.ie-f1:not(.ie-colours) :is(.menuLvlM1, .menuLvlM2, .menuLvlM3, .menuLvlM4, .menuLvlM5,
+    .menuLvlU1, .menuLvlU2, .menuLvlU3, .menuLvlU4, .menuLvlU5):hover {
+    background-color: var(--dk-raised) !important;
+}
+
+/*Carets and spacers are dark icons: turned light, as on the maroon sidebar*/
+html.ie-dark.ie-theme.ie-f1:not(.ie-colours) .col-sm-12 img {
+    filter: invert(1) opacity(0.7);
+}
+
+html.ie-dark.ie-theme.ie-f1:not(.ie-colours) body > .w3-tag:last-of-type .w3-tag {
+    color: var(--dk-text) !important;
+    background-color: var(--dk-raised) !important;
+    border-color: var(--dk-control) !important;
+}
+
+html.ie-dark.ie-theme.ie-f1:not(.ie-colours) body > .w3-tag:last-of-type div.w3-tag:hover {
+    color: var(--dk-bg) !important;
+    background-color: var(--dk-primary) !important;
+}
+
+/*=== Content frame (ie-f3) ===*/
+html.ie-dark.ie-theme.ie-f3 body {
+    color: var(--dk-text) !important;
+    background-color: var(--dk-bg) !important;
+}
+
+/*The portal's own text colours (black divs, grey h4 and so on)*/
+/*:not(a *) keeps text inside links in the link colour*/
+html.ie-dark.ie-theme.ie-f3 :is(div, p, span, td, th, li, label, b, strong, center, h1, h2, h3, h4, h5, h6, font:not([color])):not(a *) {
+    color: var(--dk-text) !important;
+}
+
+/*The portal's own backgrounds: bgcolor attributes and hover rows*/
+html.ie-dark.ie-theme.ie-f3 :is([bgcolor], .w3-white, .w3-light-grey) {
+    background-color: var(--dk-surface) !important;
+}
+
+/*The portal's row hover: goOver() gives the row the class rowover*/
+html.ie-dark.ie-theme.ie-f3 tr.rowover, html.ie-dark.ie-theme.ie-f3 tr.rowover > td {
+    background-color: var(--dk-row-hover) !important;
+}
+
+html.ie-dark.ie-theme.ie-f3 :is(table, td, th, hr) {
+    border-color: var(--dk-border) !important;
+}
+
+html.ie-dark.ie-theme.ie-f3 :is(a, a:link, a:active, a:visited) {
+    color: var(--dk-link) !important;
+}
+
+html.ie-dark.ie-theme.ie-f3 a:hover {
+    color: var(--dk-link-hover) !important;
+}
+
+/*Page title bar and process headers: maroon with the WSU colours, as in light*/
+html.ie-dark.ie-theme.ie-f3 :is(body > h1, td.ie_process_hdr) {
+    color: var(--dk-banner-text) !important;
+    background-color: var(--dk-banner) !important;
+}
+
+/*User details box and the fixed heading box*/
+html.ie-dark.ie-theme.ie-f3 table.mi_userdet, html.ie-dark.ie-theme.ie-f3 table.w3-table-all td > h1 {
+    background-color: var(--dk-surface) !important;
+}
+
+html.ie-dark.ie-theme.ie-f3 :is(table.mi_userdet td, table.w3-table-all td > h1) {
+    border-color: var(--dk-border) !important;
+}
+
+/*Notice box*/
+html.ie-dark.ie-theme.ie-f3 td.notetext {
+    background-color: var(--dk-notice) !important;
+}
+
+/*Dotted lines between processes*/
+html.ie-dark.ie-theme.ie-f3 :is(.mbbot table td.ie_process, .mbbot table td.ie_process_desc, table.ctx_table td) {
+    border-bottom-color: var(--dk-border) !important;
+}
+
+/*Text boxes and drop-downs*/
+html.ie-dark.ie-theme.ie-f3 :is(input:not([type=button], [type=submit], [type=reset], [type=radio], [type=checkbox], [type=image], [type=hidden]), select, textarea) {
+    color: var(--dk-text) !important;
+    background-color: var(--dk-bg) !important;
+    border-color: var(--dk-control) !important;
+}
+
+html.ie-dark.ie-theme.ie-f3 .ienablerSelect {
+    background-image: var(--selectChevronDark) !important;
+}
+
+html.ie-dark.ie-theme.ie-f3 :is(.ienablerSelect, #ienablerSearch):focus {
+    border-color: var(--dk-focus) !important;
+    box-shadow: 0 0 0 3px var(--dk-focus) !important;
+}
+
+html.ie-dark.ie-theme.ie-f3 :is(input[type=radio], input[type=checkbox]) {
+    accent-color: var(--dk-link);
+}
+
+/*Buttons*/
+html.ie-dark.ie-theme.ie-f3 :is([type=button], [type=reset], [type=submit], button):not(:disabled) {
+    color: var(--dk-text) !important;
+    background: var(--dk-raised) !important;
+    border: 1px solid var(--dk-control) !important;
+    box-shadow: none !important;
+    filter: none !important;
+}
+
+html.ie-dark.ie-theme.ie-f3 :is([type=button], [type=reset], [type=submit], button):not(:disabled):is(:hover, :active) {
+    color: var(--dk-bg) !important;
+    background: var(--dk-primary) !important;
+    border-color: var(--dk-primary) !important;
+}
+
+/*Main action: light ochre (WSU) or light grey, with dark text. Maroon would vanish on the dark page*/
+html.ie-dark.ie-theme.ie-f3 .ienablerBtnPrimary:not(:disabled) {
+    color: var(--dk-bg) !important;
+    background: var(--dk-primary) !important;
+    border-color: var(--dk-primary) !important;
+    font-weight: 400 !important;
+}
+
+html.ie-dark.ie-theme.ie-f3 .ienablerBtnPrimary:not(:disabled):is(:hover, :active) {
+    background: var(--dk-primary-hover) !important;
+    border-color: var(--dk-primary-hover) !important;
+}
+
+html.ie-dark.ie-theme.ie-f3 :is(.ienablerBtn, [type=button], [type=reset], [type=submit], button):focus-visible {
+    box-shadow: 0 0 0 3px var(--dk-focus) !important;
+}
+
+/*Subjects table and its search box*/
+html.ie-dark.ie-theme.ie-f3 #tbSubjects {
+    color: var(--dk-text) !important;
+    border-color: var(--dk-border) !important;
+}
+
+html.ie-dark.ie-theme.ie-f3 #tbSubjects td {
+    background-color: var(--dk-surface) !important;
+    border-bottom-color: var(--dk-border) !important;
+}
+
+html.ie-dark.ie-theme.ie-f3 #tbSubjects thead th {
+    color: var(--dk-text) !important;
+    background-color: var(--dk-raised) !important;
+    border-bottom-color: var(--dk-rule) !important;
+}
+
+html.ie-dark.ie-theme.ie-f3 #tbSubjects tbody tr:hover > td {
+    background-color: var(--dk-row-hover) !important;
+}
+
+html.ie-dark.ie-theme.ie-f3 .ienablerCount {
+    color: var(--dk-muted) !important;
+}
+
+/*Portal pop-ups, drawn by overlib in #overDiv:
+- hover tooltips on table cells: a frame table around a text table, text in <font color="#000000">
+- the subject menu: the same with a caption ("CHOOSE AN OPTION") and CLOSE. content.js adds
+  popUpLevel0 (frame), popUpHeader (caption row), popUpBody (text table) and popUpContent (links)
+#overDiv gives these rules the weight of an id, over the general rules above*/
+
+/*Frame: maroon (WSU) or mid grey (as in light), with a visible edge and a shadow to lift it off the page*/
+html.ie-dark.ie-theme.ie-f3 #overDiv > table {
+    background-color: var(--dk-popup-bar) !important;
+    border: 1px solid var(--dk-control) !important;
+    box-shadow: 0 6px 18px var(--dark-shadow) !important;
+}
+
+/*Text and menu area: a raised surface, a step up from the table behind it*/
+html.ie-dark.ie-theme.ie-f3 #overDiv :is(table[bgcolor], .popUpBody):not(#overDiv > table) {
+    background-color: var(--dk-raised) !important;
+    border-color: var(--dk-popup-bar) !important;
+}
+
+html.ie-dark.ie-theme.ie-f3 #overDiv :is(table[bgcolor], .popUpBody):not(#overDiv > table) td {
+    background-color: transparent !important;
+}
+
+html.ie-dark.ie-theme.ie-f3 #overDiv :is(td, th, font, div, span, b, strong, p, li) {
+    color: var(--dk-text) !important;
+}
+
+html.ie-dark.ie-theme.ie-f3 #overDiv :is(a, a:link, a:visited), html.ie-dark.ie-theme.ie-f3 #overDiv a * {
+    color: var(--dk-link) !important;
+}
+
+html.ie-dark.ie-theme.ie-f3 #overDiv a:hover, html.ie-dark.ie-theme.ie-f3 #overDiv a:hover * {
+    color: var(--dk-link-hover) !important;
+}
+
+/*Lines inside the pop-up, a little stronger than elsewhere*/
+html.ie-dark.ie-theme.ie-f3 #overDiv :is(table, td, th):not(#overDiv > table) {
+    border-color: var(--dk-divider) !important;
+}
+
+html.ie-dark.ie-theme.ie-f3 #overDiv hr {
+    color: var(--dk-divider) !important;
+    border-color: var(--dk-divider) !important;
+    background-color: var(--dk-divider) !important;
+}
+
+/*Menu caption: maroon with cream text (WSU) or mid grey with light text, as in light*/
+html.ie-dark.ie-theme.ie-f3 #overDiv .popUpHeader td:first-of-type {
+    background-color: var(--dk-popup-bar) !important;
+}
+
+html.ie-dark.ie-theme.ie-f3 #overDiv .popUpHeader td:first-of-type :is(font, b, span, div), html.ie-dark.ie-theme.ie-f3 #overDiv .popUpHeader td:first-of-type {
+    color: var(--dk-banner-text) !important;
+}
+
+/*CLOSE: a button, light ochre (WSU) or light grey with dark text, cream or white on hover.
+Found by its link (cClick), so it works with or without the classes content.js adds*/
+html.ie-dark.ie-theme.ie-f3 #overDiv td:has(> a[href*="cClick"]) {
+    padding: 2px 10px !important;
+    background-color: var(--dk-primary) !important;
+    border-color: var(--dk-primary) !important;
+    cursor: pointer;
+}
+
+html.ie-dark.ie-theme.ie-f3 #overDiv td:has(> a[href*="cClick"]):hover {
+    background-color: var(--dk-primary-hover) !important;
+    border-color: var(--dk-primary-hover) !important;
+}
+
+html.ie-dark.ie-theme.ie-f3 #overDiv :is(a[href*="cClick"], a[href*="cClick"] *) {
+    color: var(--dk-bg) !important;
+    text-decoration: none !important;
+}
+
+/*=== W3.CSS (loaded by many portal pages, the main menu and the login page) ===*/
+/*W3.CSS colours rows without !important but its colour classes (w3-white, w3-light-grey,
+w3-border...) with !important, so only those rules need it here*/
+
+/*Tables: dark rows with a subtle stripe, visible lines, and a raised header or label column.
+The rows are coloured, not only the cells, because W3.CSS paints the rows*/
+:is(html.ie-dark.ie-theme.ie-f3, html.ie-dark.ie-theme.ie-top, html.ie-dark body.customLogin) :is(.w3-table-all, .w3-table, .w3-striped, .w3-bordered) {
+    border-color: var(--dk-border);
+}
+
+:is(html.ie-dark.ie-theme.ie-f3, html.ie-dark.ie-theme.ie-top, html.ie-dark body.customLogin) :is(.w3-table-all, .w3-striped) tr {
+    background-color: var(--dk-surface);
+}
+
+:is(html.ie-dark.ie-theme.ie-f3, html.ie-dark.ie-theme.ie-top, html.ie-dark body.customLogin) :is(.w3-table-all, .w3-striped) tr:nth-child(even) {
+    background-color: var(--dk-stripe);
+}
+
+:is(html.ie-dark.ie-theme.ie-f3, html.ie-dark.ie-theme.ie-top, html.ie-dark body.customLogin) :is(.w3-table-all, .w3-bordered) tr {
+    border-bottom-color: var(--dk-border);
+}
+
+:is(html.ie-dark.ie-theme.ie-f3, html.ie-dark.ie-theme.ie-top, html.ie-dark body.customLogin) :is(.w3-table-all, .w3-table, .w3-striped, .w3-bordered) th {
+    color: var(--dk-text);
+    background-color: var(--dk-raised);
+}
+
+:is(html.ie-dark.ie-theme.ie-f3, html.ie-dark.ie-theme.ie-top, html.ie-dark body.customLogin) :is(.w3-hoverable tbody tr:hover, .w3-table-all tr.rowover) {
+    background-color: var(--dk-row-hover);
+}
+
+/*Colour classes*/
+:is(html.ie-dark.ie-theme.ie-f3, html.ie-dark.ie-theme.ie-top, html.ie-dark body.customLogin) :is(.w3-white, .w3-light-grey, .w3-light-gray, .w3-pale-red, .w3-pale-yellow, .w3-pale-green, .w3-pale-blue, .w3-sand, .w3-khaki):not(nav) {
+    color: var(--dk-text) !important;
+    background-color: var(--dk-surface) !important;
+}
+
+:is(html.ie-dark.ie-theme.ie-f3, html.ie-dark.ie-theme.ie-top, html.ie-dark body.customLogin) :is(.w3-hover-white, .w3-hover-light-grey, .w3-hover-light-gray):hover {
+    color: var(--dk-text) !important;
+    background-color: var(--dk-raised) !important;
+}
+
+:is(html.ie-dark.ie-theme.ie-f3, html.ie-dark.ie-theme.ie-top, html.ie-dark body.customLogin) :is(.w3-text-grey, .w3-text-gray, .w3-text-dark-grey, .w3-text-black) {
+    color: var(--dk-muted) !important;
+}
+
+/*Faded text is fine on white, too faint on dark: full opacity in dark mode*/
+:is(html.ie-dark.ie-theme.ie-f3, html.ie-dark.ie-theme.ie-top, html.ie-dark body.customLogin) :is(.w3-opacity, .w3-opacity-min, .w3-opacity-max, .w3-hover-opacity:hover) {
+    opacity: 1;
+}
+
+/*Borders*/
+:is(html.ie-dark.ie-theme.ie-f3, html.ie-dark.ie-theme.ie-top, html.ie-dark body.customLogin) :is(.w3-border, .w3-border-top, .w3-border-bottom, .w3-border-left, .w3-border-right, .w3-border-grey, .w3-border-light-grey, .w3-border-white, .w3-bottombar, .w3-topbar, .w3-leftbar, .w3-rightbar) {
+    border-color: var(--dk-border) !important;
+}
+
+:is(html.ie-dark.ie-theme.ie-f3, html.ie-dark.ie-theme.ie-top, html.ie-dark body.customLogin) :is(.w3-container, .w3-panel, .w3-cell-row, .w3-row, .w3-responsive) {
+    border-color: var(--dk-border);
+}
+
+/*Cards: an outline instead of the shadow, which is lost on dark*/
+:is(html.ie-dark.ie-theme.ie-f3, html.ie-dark.ie-theme.ie-top) :is(.w3-card, .w3-card-2, .w3-card-4) {
+    background-color: var(--dk-surface);
+    box-shadow: none;
+    outline: 1px solid var(--dk-border);
+}
+
+/*The portal's black GIF icons (calendar, list of values...) disappear on dark: a light panel behind
+the clickable ones*/
+:is(html.ie-dark.ie-theme.ie-f3, html.ie-dark body.customLogin) :is(a img[src*="itsimages/"], img[src*="calendar.gif"], img[src*="lov.gif"]):not([src*="InsImg"]) {
+    padding: 2px;
+    background-color: var(--dk-icon-panel);
+    border-radius: 3px;
+}
+
+/*=== Login page (body.customLogin) ===*/
+html.ie-dark body.customLogin {
+    color: var(--dk-text) !important;
+    background-color: var(--dk-bg) !important;
+}
+
+html.ie-dark body.customLogin :is(div, p, span, td, th, li, label, b, strong, header, h1, h2, h3, h4, h5, h6, font:not([color])):not(a *) {
+    color: var(--dk-text) !important;
+}
+
+html.ie-dark body.customLogin :is(.w3-white, .w3-light-grey, .w3-light-blue, [bgcolor]) {
+    background-color: var(--dk-surface) !important;
+}
+
+/*Login cards: an outline instead of the shadow, which is lost on dark*/
+html.ie-dark body.customLogin :is(.w3-card, .w3-card-2, .w3-card-4) {
+    background-color: var(--dk-surface) !important;
+    box-shadow: none !important;
+    border: 1px solid var(--dk-border) !important;
+}
+
+/*Card headers: maroon with the WSU colours (as in light), dark grey without (the portal's blue
+fails AA even in light)*/
+html.ie-dark body.customLogin .w3-blue, html.ie-dark body.customLogin .w3-blue :is(h1, h2, h3, h4, h5, h6) {
+    color: var(--dk-banner-text) !important;
+    background-color: var(--dk-banner) !important;
+}
+
+html.ie-dark body.customLogin :is(a, a:link, a:visited) {
+    color: var(--dk-link) !important;
+}
+
+html.ie-dark body.customLogin a:hover {
+    color: var(--dk-link-hover) !important;
+}
+
+html.ie-dark body.customLogin form[name="frmLogin"] input[name="pin"] + p {
+    color: var(--dk-muted) !important;
+}
+
+/*Number and PIN*/
+html.ie-dark body.customLogin form[name="frmLogin"] .w3-input {
+    color: var(--dk-text) !important;
+    background-color: var(--dk-bg) !important;
+    border-color: var(--dk-control) !important;
+}
+
+html.ie-dark body.customLogin form[name="frmLogin"] .w3-input:focus {
+    border-color: var(--dk-focus) !important;
+    box-shadow: 0 0 0 3px var(--dk-focus) !important;
+}
+
+html.ie-dark body.customLogin [type=radio] {
+    accent-color: var(--dk-link);
+}
+
+/*Forgot PIN, Change PIN and the other buttons*/
+html.ie-dark body.customLogin :is([type=button], .w3-button) {
+    color: var(--dk-text) !important;
+    background-color: var(--dk-raised) !important;
+    border: 1px solid var(--dk-control) !important;
+}
+
+html.ie-dark body.customLogin :is([type=button], .w3-button):hover {
+    color: var(--dk-bg) !important;
+    background-color: var(--dk-primary) !important;
+    border-color: var(--dk-primary) !important;
+}
+
+/*Login: the main button, light ochre (WSU) or light grey*/
+html.ie-dark body.customLogin form[name="frmLogin"] [type=submit] {
+    color: var(--dk-bg) !important;
+    background-color: var(--dk-primary) !important;
+    border: 1px solid var(--dk-primary) !important;
+}
+
+html.ie-dark body.customLogin form[name="frmLogin"] [type=submit]:hover {
+    color: var(--dk-bg) !important;
+    background-color: var(--dk-primary-hover) !important;
+    border-color: var(--dk-primary-hover) !important;
+}
+
+html.ie-dark body.customLogin form[name="frmLogin"] :is([type=submit], [type=button]):focus-visible {
+    box-shadow: 0 0 0 3px var(--dk-focus) !important;
+}
+
+/*Footer*/
+html.ie-dark body.customLogin td.customfooter {
+    color: var(--dk-muted) !important;
+    background-color: var(--dk-surface) !important;
+}
+
+/*Logo: the new one turned white; the old one has a white background, so it sits on a cream panel*/
+html.ie-dark body.customLogin img[src*="wsu-logo-new"] {
+    filter: var(--logoOnDarkFilter);
+}
+
+html.ie-dark body.customLogin img[src*="InsImg.gif"] {
+    padding: 12px 20px;
+    background-color: var(--wsu-cream);
+    border-radius: 12px;
+}
+
+} /*@media screen*/

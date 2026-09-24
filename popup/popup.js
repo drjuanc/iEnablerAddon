@@ -4,8 +4,9 @@ Saving is debounced (see storeConfig); the iEnabler pages after login update the
 config changes (content/content.js), the login page is updated live through background.js*/
 
 var arrConfig; //The settings, read when the popup opens
-//Appearance options that only apply with the modern look: disabled while it is off
-var APPEARANCE_OPTIONS = ['customColors', 'wcga', 'colourSchemeGroup'];
+//Appearance options that only apply with the modern look: disabled while it is off.
+//The colour scheme stays enabled: it also sets this window and the login page
+var APPEARANCE_OPTIONS = ['customColors', 'wcga', 'hideFooter'];
 var currentURL = ''; //Address of the active tab, to update the login page live
 
 function byId(id) {
@@ -36,6 +37,7 @@ chrome.storage.sync.get(function (result) {
     }
     if (arrConfig[1][0] == 'customColors') setChecked('customColors', arrConfig[0][1] && arrConfig[1][1]);
     if (arrConfig[2][0] == 'wgca') setChecked('wcga', arrConfig[0][1] && arrConfig[2][1]);
+    if (arrConfig[11] && arrConfig[11][0] == 'hideFooter') setChecked('hideFooter', arrConfig[0][1] && arrConfig[11][1]);
 
     // "Improved login page" switch
     if (arrConfig[3][0] == 'customLogin') {
@@ -56,8 +58,8 @@ chrome.storage.sync.get(function (result) {
     if (arrConfig[6][0] == 'userTypeDef') setChecked('userTypeDef', arrConfig[3][1] && arrConfig[6][1]);
     if (arrConfig[7][0] == 'cleanLogin') setChecked('cleanLogin', arrConfig[3][1] && arrConfig[7][1]);
 
-    // "Colour scheme": the synced setting wins over the copy theme.js used. This window follows it
-    //even while the modern look is off; the iEnabler pages only with the modern look (content.js)
+    // "Colour scheme": the synced setting wins over the copy theme.js used. This window always follows
+    //it; the iEnabler pages with the modern look, the login page with the improved login page (content.js)
     if (arrConfig[10] && arrConfig[10][0] == 'colourScheme') {
         var scheme = byId({ auto: 'colourSchemeAuto', light: 'colourSchemeLight', dark: 'colourSchemeDark' }[arrConfig[10][1]] || 'colourSchemeAuto');
         scheme.checked = true;
@@ -97,6 +99,7 @@ onChange('customTheme', function (state) {
     setDisabled(APPEARANCE_OPTIONS, !state);
     setChecked('customColors', state && arrConfig[1][1]);
     setChecked('wcga', state && arrConfig[2][1]);
+    setChecked('hideFooter', state && arrConfig[11][1]);
 });
 
 // "WSU colours" (iEnabler pages)
@@ -110,6 +113,13 @@ onChange('customColors', function (state) {
 onChange('wcga', function (state) {
     if (!configEntryIs(2, 'wgca')) return;
     arrConfig[2][1] = state;
+    storeConfig(arrConfig);
+});
+
+// "Hide the page footer"
+onChange('hideFooter', function (state) {
+    if (!configEntryIs(11, 'hideFooter')) return;
+    arrConfig[11][1] = state;
     storeConfig(arrConfig);
 });
 

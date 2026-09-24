@@ -63,8 +63,29 @@ custom colour rules (.ie-theme.ie-colours) repeat the selector with the WSU pale
 .ie-theme.ie-f1 body > .w3-tag:first-of-type {
     position: fixed;
     bottom: 100px;
-    width: 90%;
     left: 25px;
+    right: 10px; /*Between the edges rather than 90% wide, which overflowed a narrow sidebar*/
+    width: auto;
+}
+
+/*The menu never gets wider than the sidebar: long items wrap (even a long word), and clip stops
+it from scrolling sideways. The clip margin keeps focus outlines visible*/
+.ie-theme.ie-f1 #menu, .ie-theme.ie-f1 #menu .row, .ie-theme.ie-f1 #menu .col-sm-12 {
+    max-width: 100%;
+    overflow-x: clip;
+    overflow-clip-margin: 8px;
+}
+
+.ie-theme.ie-f1 #menu a {
+    overflow-wrap: anywhere;
+}
+
+/*Hanging indent: a wrapped item continues under the text of the items (26px in), not at the
+left edge. each-line applies the negative indent to the first line after every <br>, so each
+item's first line starts exactly where it did before*/
+.ie-theme.ie-f1 #menu .col-sm-12 {
+    padding-left: 26px;
+    text-indent: -26px each-line;
 }
 
 .ie-theme.ie-f1 #menu {

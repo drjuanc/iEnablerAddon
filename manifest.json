@@ -57,7 +57,8 @@
         "content/css/login.css",
         "content/css/framef1.css",
         "content/css/framef3.css",
-        "content/css/accessibility.css"
+        "content/css/accessibility.css",
+        "content/css/dark.css"
       ],
       "js": [
         "content/content.js"
