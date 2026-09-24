@@ -17,7 +17,7 @@ chrome.tabs.query({ active: true, currentWindow: true }, function (tabs) {
 
             //Depending on the config update the controls
             // "Custom Theme" switch
-            if (arrConfig[0][0] = 'customTheme') {
+            if (arrConfig[0][0] == 'customTheme') {
                 var arrItems = [$('#customTheme')];
                 var arrSubItems = [$('#customColors'), $('#wcga'), $('#customColorsH6'), $('#wcgaH6')]
                 changeItemStatus(arrSubItems, arrConfig[0][1]);
@@ -26,7 +26,7 @@ chrome.tabs.query({ active: true, currentWindow: true }, function (tabs) {
 
 
             // "Custom Login" switch
-            if (arrConfig[3][0] = 'customLogin') {
+            if (arrConfig[3][0] == 'customLogin') {
                 var arrItems = [ //To uncheck
                     $('#customLogin'), $('#fixLogo'),
                     $('#customLoginColors'), $('#personnelDef'),
@@ -44,7 +44,7 @@ chrome.tabs.query({ active: true, currentWindow: true }, function (tabs) {
             }
 
             // "Custom Login colors" switch
-            if (arrConfig[4][0] = 'customLoginColors') {
+            if (arrConfig[4][0] == 'customLoginColors') {
                 var arrItems = [$('#customLoginColors')]; //To uncheck
 
                 //If the custom login is on 
@@ -57,7 +57,7 @@ chrome.tabs.query({ active: true, currentWindow: true }, function (tabs) {
             }
 
             // "Fix WSU logo" switch
-            if (arrConfig[5][0] = 'fixWSULogo') {
+            if (arrConfig[5][0] == 'fixWSULogo') {
                 var arrItems = [$('#fixLogo')]; //To uncheck
 
                 //If the custom login is on 
@@ -69,7 +69,7 @@ chrome.tabs.query({ active: true, currentWindow: true }, function (tabs) {
             }
 
             // "Personnel as default" switch
-            if (arrConfig[6][0] = 'personnelDef') {
+            if (arrConfig[6][0] == 'personnelDef') {
                 var arrItems = [$('#personnelDef')]; //To uncheck
 
                 //If the custom login is on 
@@ -81,7 +81,7 @@ chrome.tabs.query({ active: true, currentWindow: true }, function (tabs) {
             }
 
             // "Clean Login" switch
-            if (arrConfig[7][0] = 'cleanLogin') {
+            if (arrConfig[7][0] == 'cleanLogin') {
                 var arrItems = [$('#cleanLogin')]; //To uncheck
 
                 //If the custom login is on 
@@ -383,7 +383,7 @@ function changeSwitchState(items, state) {
     for (var x in items) {
         var nodeType = (items[x].prop('nodeName'));
         //Only for switchs;
-        if (nodeType = 'INPUT') {
+        if (nodeType == 'INPUT') {
             items[x].prop('checked', state);
         }
     }

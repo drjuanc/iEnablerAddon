@@ -21,7 +21,7 @@
         /*==Now I read every individual configation and act accordingly==*/
         //Custom theme
 
-        if (arrConfig[0][0] = 'customTheme' && !currentURl.includes('mi_login')) {
+        if (arrConfig[0][0] == 'customTheme' && !currentURl.includes('mi_login')) {
             if (arrConfig[0][1]) {
                 //Activate the custo Theme adding a class to the body
                 var docBody = document.body;
@@ -37,19 +37,19 @@
         if (currentURl.includes('mi_login')) {
             let docBody = document.body;
             //Activate the custom login adding a class to the body
-            if (arrConfig[3][0] = 'customLogin' && arrConfig[3][1]) docBody.classList.add("customLogin");
+            if (arrConfig[3][0] == 'customLogin' && arrConfig[3][1]) docBody.classList.add("customLogin");
 
             //Activate the custom login colors adding a class to the body
-            if (arrConfig[4][0] = 'customLogin' && arrConfig[4][1]) docBody.classList.add("customLoginColors");
+            if (arrConfig[4][0] == 'customLoginColors' && arrConfig[4][1]) docBody.classList.add("customLoginColors");
 
             //Fix WSU logo. If the option is active I call the function
-            if ((arrConfig[5][0] = 'fixWSULogo' && arrConfig[5][1]) && (arrConfig[3][1])) fixWSULogo(360);
+            if ((arrConfig[5][0] == 'fixWSULogo' && arrConfig[5][1]) && (arrConfig[3][1])) fixWSULogo(360);
 
             //Select personnel as default option
-            if ((arrConfig[6][0] = 'personnelDef' && arrConfig[6][1]) && (arrConfig[3][1])) document.getElementsByName('numtype')[1].checked = true;;
+            if ((arrConfig[6][0] == 'personnelDef' && arrConfig[6][1]) && (arrConfig[3][1])) document.getElementsByName('numtype')[1].checked = true;;
 
             //CleanLogin
-            if ((arrConfig[7][0] = 'cleanLogin' && arrConfig[7][1]) && (arrConfig[3][1])) docBody.classList.add("cleanLogin");
+            if ((arrConfig[7][0] == 'cleanLogin' && arrConfig[7][1]) && (arrConfig[3][1])) docBody.classList.add("cleanLogin");
 
             //Remove the margin of the main div
             document.getElementsByClassName('w3-main')[0].removeAttribute('style');
