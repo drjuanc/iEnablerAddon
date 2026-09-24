@@ -6,9 +6,10 @@ const DEFAULT_CONFIG = [
     ['customLogin', true],       //[3]
     ['customLoginColors', true], //[4]
     ['fixWSULogo', true],       //[5]
-    ['personnelDef', true],       //[6]
+    ['userTypeDef', false],       //[6] select the user type below by default on the login page
     ['cleanLogin', true],       //[7]
-    ['otherConfg', false]
+    ['otherConfg', false],       //[8]
+    ['userType', 'S']            //[9] S student, P personnel, A alumni, O other (values of the login radios)
 
 ];
 
@@ -28,6 +29,15 @@ chrome.runtime.onInstalled.addListener(function (details) {
 //Build the config in the default order, keeping every value the user already has
 function mergeConfig(storedConfig) {
     if (!Array.isArray(storedConfig)) return DEFAULT_CONFIG;
+
+    //Before v2.0.0 there was a 'Personnel as default' switch: on becomes Personnel selected by default,
+    //off becomes Student, not by default
+    let personnelDef = storedConfig.find(item => Array.isArray(item) && item[0] === 'personnelDef');
+    storedConfig = storedConfig.filter(item => !(Array.isArray(item) && item[0] === 'personnelDef'));
+    if (personnelDef && !storedConfig.some(item => Array.isArray(item) && item[0] === 'userTypeDef')) {
+        let wasOn = personnelDef[1] === true;
+        storedConfig.push(['userTypeDef', wasOn], ['userType', wasOn ? 'P' : 'S']);
+    }
 
     let merged = DEFAULT_CONFIG.map(function ([key, value]) {
         let existing = storedConfig.find(item => Array.isArray(item) && item[0] === key);
@@ -49,8 +59,8 @@ function storeConfig(objConfig) {
 
 
 
-//Get current Tab in order to insert the resources
-function insertScript(code) {
+//Get current Tab in order to insert the resources. 'args' are passed to the function
+function insertScript(code, args) {
     //lastFocusedWindow rather than windows.getCurrent, which has no meaning in a service worker
     chrome.tabs.query({ active: true, lastFocusedWindow: true }, function (activeTabs) {
         activeTabs.forEach(function (tab) {
@@ -58,7 +68,8 @@ function insertScript(code) {
             chrome.scripting.executeScript(
                 {
                     target: { tabId: tab.id, allFrames: true },
-                    func: code
+                    func: code,
+                    args: args || []
                 },
                 () => {
                     if (chrome.runtime.lastError) console.log(chrome.runtime.lastError.message);
@@ -112,13 +123,18 @@ chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
                 }
                 break;
 
-            case 'personnelDef':
+            case 'userTypeDef':
 
                 if (request.param) {
-                    insertScript(personnelDef); //select the personnel as default
+                    insertScript(selectUserType, [request.type]); //select the user type as default
                 } else {
-                    insertScript(noPersonnelDef); //student as default
+                    insertScript(selectUserType, ['S']); //student, the portal's default
                 }
+                break;
+
+            case 'userType':
+
+                insertScript(selectUserType, [request.param]); //a different user type, already the default
                 break;
 
             case 'cleanLogin':
@@ -142,7 +158,8 @@ chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
 })
 
 /*=====Functions to be inserted in the page=====*/
-/*These run in the page, so they cannot use anything else in this file*/
+/*These run in the page, so they cannot use anything else in this file. They share the
+content scripts' isolated world, so they can call window.iEnablerLogin from content/content.js*/
 //Replace the low-res WSU logo with the new one. Keep the width in step with fixWSULogo in content/content.js
 function fixWSULogo() {
     var wsuLogo = document.getElementsByTagName("img")[0];
@@ -171,38 +188,16 @@ function unFixWSULogo() {
 function addCustomLogin() {
     document.body.classList.add("customLogin");
 
-    //Login page wording, same as fixLoginTexts in content/content.js. Keep both in step.
-    document.querySelectorAll('header.w3-blue h5').forEach(function (header) {
-        if (header.textContent.trim() == 'Registered Users: Login Credentials') {
-            header.dataset.ienablerOriginal = header.textContent;
-            header.textContent = 'Login Credentials';
-        }
-    });
-
-    var pin = document.querySelector('form[name="frmLogin"] input[name="pin"]');
-    var hint = pin ? pin.nextElementSibling : null;
-    var hintText = hint && hint.tagName == 'P' ? hint.firstChild : null;
-    if (hintText && hintText.nodeType == Node.TEXT_NODE && hintText.nodeValue.includes('digits.Do')) {
-        hint.dataset.ienablerOriginal = hintText.nodeValue;
-        hintText.nodeValue = hintText.nodeValue.replace('digits.Do', 'digits. Do');
-    }
+    //Login wording and labels, see iEnablerLogin in content/content.js
+    if (window.iEnablerLogin) window.iEnablerLogin.apply();
 }
 
 //remove the class 'customLogin' bringing back the old theme
 function removeCustomLogin() {
     document.body.classList.remove('customLogin');
 
-    //Bring back the original login wording
-    document.querySelectorAll('header.w3-blue h5[data-ienabler-original]').forEach(function (header) {
-        header.textContent = header.dataset.ienablerOriginal;
-        delete header.dataset.ienablerOriginal;
-    });
-
-    var hint = document.querySelector('form[name="frmLogin"] p[data-ienabler-original]');
-    if (hint && hint.firstChild && hint.firstChild.nodeType == Node.TEXT_NODE) {
-        hint.firstChild.nodeValue = hint.dataset.ienablerOriginal;
-        delete hint.dataset.ienablerOriginal;
-    }
+    //Bring back the original login wording and labels
+    if (window.iEnablerLogin) window.iEnablerLogin.restore();
 }
 
 //add the class 'customLoginColors' to the body to enable the new theme
@@ -215,13 +210,9 @@ function removeCustomLoginColors() {
     document.body.classList.remove('customLoginColors');
 }
 
-//Personnel as default
-function personnelDef() {
-    document.getElementsByName('numtype')[1].checked = true;
-}
-
-function noPersonnelDef() {
-    document.getElementsByName('numtype')[0].checked = true;
+//Select the user type radio on the login page (see iEnablerLogin in content/content.js)
+function selectUserType(type) {
+    if (window.iEnablerLogin) window.iEnablerLogin.selectUserType(type);
 }
 
 //add the class 'cleanLogin' to the body

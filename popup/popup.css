@@ -157,6 +157,25 @@ body{
     border-top: 1px solid var(--borderLight);
 }
 
+/*== "I log in as" radios (Config tab) ==*/
+.userTypeLegend {
+    float: none;
+    margin-bottom: 4px;
+    font-size: 1em;
+    font-weight: 600;
+}
+
+/*2 x 2 grid: Student, Personnel / Alumni, Other*/
+.userTypeGrid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 4px 16px;
+}
+
+.userTypeGrid .form-check {
+    margin-bottom: 0;
+}
+
 /*== WSU colours for the Bootstrap controls ==*/
 a {
     color: var(--primaryColor);

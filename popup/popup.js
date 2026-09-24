@@ -29,13 +29,13 @@ chrome.tabs.query({ active: true, currentWindow: true }, function (tabs) {
             if (arrConfig[3][0] == 'customLogin') {
                 var arrItems = [ //To uncheck
                     $('#customLogin'), $('#fixLogo'),
-                    $('#customLoginColors'), $('#personnelDef'),
+                    $('#customLoginColors'), $('#userTypeDef'),
                     $('#cleanLogin')
                 ]; 
                 var arrSubItems = [ //to deactivate
                     $('#customLoginColors'), $('#customLoginColorsH6'),
                     $('#fixLogo'), $('#fixLogoH6'),
-                    $('#personnelDef'), $('#personnelDefH6'),
+                    $('#userTypeGroup'), $('#userTypeDef'),
                     $('#cleanLogin'), $('#cleanLoginH6')
                 ]
 
@@ -68,9 +68,14 @@ chrome.tabs.query({ active: true, currentWindow: true }, function (tabs) {
                 }
             }
 
-            // "Personnel as default" switch
-            if (arrConfig[6][0] == 'personnelDef') {
-                var arrItems = [$('#personnelDef')]; //To uncheck
+            // "I log in as" radios
+            if (arrConfig[9] && arrConfig[9][0] == 'userType') {
+                $('#userType' + arrConfig[9][1]).prop('checked', true);
+            }
+
+            // "Select this option by default" switch
+            if (arrConfig[6][0] == 'userTypeDef') {
+                var arrItems = [$('#userTypeDef')]; //To uncheck
 
                 //If the custom login is on 
                 if (arrConfig[3][1] && arrConfig[6][1]) {
@@ -162,17 +167,18 @@ chrome.tabs.query({ active: true, currentWindow: true }, function (tabs) {
                 var items = [ //to deactivate
                     $('#customLoginColors'), $('#customLoginColorsH6'),
                     $('#fixLogo'), $('#fixLogoH6'),
-                    $('#personnelDef'), $('#personnelDefH6'),
+                    $('#userTypeGroup'), $('#userTypeDef'),
                     $('#cleanLogin'), $('#cleanLoginH6')
                 ]
                 var checkItems = [ //to check
                     $('#customLoginColors'),
-                    $('#fixLogo'),
-                    $('#personnelDef')                   
+                    $('#fixLogo')
                 ]
                 //var chechItems = [$("#customColors"), $("#wcga")];
                 changeItemStatus(items, state);
                 changeSwitchState(checkItems, state);
+                //The user type default keeps its own setting
+                changeSwitchState([$('#userTypeDef')], state && arrConfig[6][1]);
 
                 //Update the login page
                 if (currentURL.includes('mi_login')) {
@@ -256,20 +262,20 @@ chrome.tabs.query({ active: true, currentWindow: true }, function (tabs) {
             }
         });
 
-        //Click on Perssonel as default
-        $('#personnelDef').change(function (event) {
+        //Click on "Select this option by default on the login page"
+        $('#userTypeDef').change(function (event) {
 
             var state = $(this).prop('checked'); //Selected or not
-                
-            if (arrConfig[6][0] == 'personnelDef') {
+
+            if (arrConfig[6][0] == 'userTypeDef') {
                 //Update the config option and save the configuration options in the user profile
                 arrConfig[6][1] = state;
                 storeConfig(arrConfig);
 
                 //Update the login page
                 if (currentURL.includes('mi_login')) {
-                        
-                    chrome.runtime.sendMessage({ action: "personnelDef", param: state }, function (response) {
+
+                    chrome.runtime.sendMessage({ action: "userTypeDef", param: state, type: $('input[name="userType"]:checked').val() }, function (response) {
 
                         if (response && response.noError) {
 
@@ -286,7 +292,37 @@ chrome.tabs.query({ active: true, currentWindow: true }, function (tabs) {
 
         });
 
-        //Click on Perssonel as default
+        //Click on "I log in as"
+        $('input[name="userType"]').change(function (event) {
+
+            var type = $(this).val(); //S, P, A or O
+
+            if (arrConfig[9] && arrConfig[9][0] == 'userType') {
+                //Update the config option and save the configuration options in the user profile
+                arrConfig[9][1] = type;
+                storeConfig(arrConfig);
+
+                //Update the login page, only if this type is selected by default
+                if (arrConfig[6][1] && currentURL.includes('mi_login')) {
+
+                    chrome.runtime.sendMessage({ action: "userType", param: type }, function (response) {
+
+                        if (response && response.noError) {
+
+                        }
+                    });
+
+                }
+
+            } else {
+                //Otherwise trigger an error
+                console.log("Error in the configuration option: userType");
+                configCorruption();
+            }
+
+        });
+
+        //Click on Clean login
         $('#cleanLogin').change(function (event) {
 
             var state = $(this).prop('checked'); //Selected or not
@@ -366,6 +402,11 @@ function changeItemStatus(items, state) {
 
             case 'INPUT':
                 items[x].attr('disabled', !state);
+                break;
+
+            case 'FIELDSET': //disables every radio inside
+                items[x].prop('disabled', !state);
+                items[x].css('opacity', state ? 1 : 0.6);
                 break;
 
             default:

@@ -11,6 +11,14 @@
     //at it and set --logoOnDarkFilter to 'none'.
     const WSU_LOGO = 'assets/pics/wsu-logo-new.png';
     const WSU_LOGO_ON_DARK = 'assets/pics/wsu-logo-new.png';
+
+    //Label of the number field for each login type (value of the 'numtype' radio)
+    const NUMBER_LABELS = {
+        S: 'Student number',
+        P: 'Staff number',
+        A: 'Student number', //Alumni log in with the student number they had
+        O: 'User number'
+    };
    
 
    //I read all settings and stored in a abject containing an array of propertyes
@@ -45,17 +53,27 @@
             //Fix WSU logo. If the option is active I call the function
             if ((arrConfig[5][0] == 'fixWSULogo' && arrConfig[5][1]) && (arrConfig[3][1])) fixWSULogo(360);
 
-            //Select personnel as default option
-            if ((arrConfig[6][0] == 'personnelDef' && arrConfig[6][1]) && (arrConfig[3][1])) document.getElementsByName('numtype')[1].checked = true;;
-
             //CleanLogin
             if ((arrConfig[7][0] == 'cleanLogin' && arrConfig[7][1]) && (arrConfig[3][1])) docBody.classList.add("cleanLogin");
 
             //Remove the margin of the main div
             document.getElementsByClassName('w3-main')[0].removeAttribute('style');
 
-            //Shorter login header and the missing space in the pin hint
+            //Keep the number label in step with the radio the user clicks (click and keyboard)
+            var loginForm = document.querySelector('form[name="frmLogin"]');
+            if (loginForm) {
+                ['click', 'change'].forEach(function (eventName) {
+                    loginForm.addEventListener(eventName, function (event) {
+                        if (event.target.name == 'numtype' && document.body.classList.contains('customLogin')) updateNumberLabel();
+                    });
+                });
+            }
+
+            //Login header, PIN label, number label and the missing space in the pin hint
             if (arrConfig[3][1]) fixLoginTexts();
+
+            //Select the user type by default
+            if ((arrConfig[6][0] == 'userTypeDef' && arrConfig[6][1]) && (arrConfig[3][1]) && arrConfig[9] && arrConfig[9][0] == 'userType') selectUserType(arrConfig[9][1]);
         }
 
         if (currentURl.includes("mi_main_menu")) { //Make sure the user is in the other page
@@ -93,24 +111,115 @@
 
     }
 
-    //Login page wording. The original text is kept in data-ienabler-original so
-    //removeCustomLogin in background.js can bring it back. Keep both in step.
-    function fixLoginTexts() {
-        document.querySelectorAll('header.w3-blue h5').forEach(function (header) {
-            if (header.textContent.trim() == 'Registered Users: Login Credentials') {
-                header.dataset.ienablerOriginal = header.textContent;
-                header.textContent = 'Login Credentials';
-            }
-        });
+    /*=== Login page wording and labels ===*/
+    //Change the text of an element, keeping the original in data-ienabler-original
+    function setText(element, text) {
+        if (!element || element.textContent == text) return;
+        element.dataset.ienablerOriginal = element.textContent;
+        element.textContent = text;
+    }
 
-        var pin = document.querySelector('form[name="frmLogin"] input[name="pin"]');
-        var hint = pin ? pin.nextElementSibling : null;
-        var hintText = hint && hint.tagName == 'P' ? hint.firstChild : null;
-        if (hintText && hintText.nodeType == Node.TEXT_NODE && hintText.nodeValue.includes('digits.Do')) {
-            hint.dataset.ienablerOriginal = hintText.nodeValue;
-            hintText.nodeValue = hintText.nodeValue.replace('digits.Do', 'digits. Do');
+    function restoreText(element) {
+        if (!element || element.dataset.ienablerOriginal === undefined) return;
+        element.textContent = element.dataset.ienablerOriginal;
+        delete element.dataset.ienablerOriginal;
+    }
+
+    //Link a label to its input for screen readers, remembering what was added so it can be removed
+    function linkLabel(label, input, id) {
+        if (!label || !input) return;
+        if (!input.id) {
+            input.id = id;
+            input.dataset.ienablerId = '';
+        }
+        if (!label.htmlFor) {
+            label.htmlFor = input.id;
+            label.dataset.ienablerFor = '';
         }
     }
+
+    function unlinkLabel(label, input) {
+        if (label && label.dataset.ienablerFor !== undefined) {
+            label.removeAttribute('for');
+            delete label.dataset.ienablerFor;
+        }
+        if (input && input.dataset.ienablerId !== undefined) {
+            input.removeAttribute('id');
+            delete input.dataset.ienablerId;
+        }
+    }
+
+    function loginElements() {
+        var form = document.querySelector('form[name="frmLogin"]');
+        if (!form) return null;
+        var unum = form.querySelector('input[name="unum"]');
+        var pin = form.querySelector('input[name="pin"]');
+        var pinLabel = unum && unum.nextElementSibling && unum.nextElementSibling.tagName == 'LABEL' ? unum.nextElementSibling : null;
+        var hint = pin && pin.nextElementSibling && pin.nextElementSibling.tagName == 'P' ? pin.nextElementSibling : null;
+        return { form: form, unum: unum, pin: pin, numberLabel: document.getElementById('LogUsr'), pinLabel: pinLabel, hint: hint };
+    }
+
+    //Number label for the selected radio. The portal's own onclick (set_it) runs first and writes
+    //its text, which is kept in data-ienabler-original so it can be restored
+    function updateNumberLabel() {
+        var login = loginElements();
+        if (!login || !login.numberLabel) return;
+        var radio = login.form.querySelector('input[name="numtype"]:checked');
+        var text = NUMBER_LABELS[radio ? radio.value : 'S'];
+        if (text) setText(login.numberLabel, text);
+        linkLabel(login.numberLabel, login.unum, 'ienablerUnum');
+    }
+
+    function fixLoginTexts() {
+        document.querySelectorAll('header.w3-blue h5').forEach(function (header) {
+            if (header.textContent.trim() == 'Registered Users: Login Credentials') setText(header, 'Login Credentials');
+        });
+
+        var login = loginElements();
+        if (!login) return;
+
+        //Missing space in the pin hint. Only the text node changes: the <p> also holds a hidden input
+        var hintText = login.hint ? login.hint.firstChild : null;
+        if (hintText && hintText.nodeType == Node.TEXT_NODE && hintText.nodeValue.includes('digits.Do')) {
+            login.hint.dataset.ienablerOriginal = hintText.nodeValue;
+            hintText.nodeValue = hintText.nodeValue.replace('digits.Do', 'digits. Do');
+        }
+
+        setText(login.pinLabel, 'PIN');
+        linkLabel(login.pinLabel, login.pin, 'ienablerPin');
+        updateNumberLabel();
+    }
+
+    function restoreLoginTexts() {
+        document.querySelectorAll('header.w3-blue h5').forEach(restoreText);
+
+        var login = loginElements();
+        if (!login) return;
+
+        if (login.hint && login.hint.dataset.ienablerOriginal !== undefined && login.hint.firstChild) {
+            login.hint.firstChild.nodeValue = login.hint.dataset.ienablerOriginal;
+            delete login.hint.dataset.ienablerOriginal;
+        }
+
+        restoreText(login.pinLabel);
+        restoreText(login.numberLabel);
+        unlinkLabel(login.pinLabel, login.pin);
+        unlinkLabel(login.numberLabel, login.unum);
+    }
+
+    //Click the radio for the user type, so the portal's own onclick runs as if the user had clicked it
+    function selectUserType(type) {
+        if (!NUMBER_LABELS.hasOwnProperty(type)) return;
+        var radio = document.querySelector('form[name="frmLogin"] input[name="numtype"][value="' + type + '"]');
+        if (radio) radio.click();
+    }
+
+    //Used by the functions background.js injects when the popup settings change
+    window.iEnablerLogin = {
+        apply: fixLoginTexts,
+        restore: restoreLoginTexts,
+        selectUserType: selectUserType
+    };
 
     document.addEventListener('readystatechange', event => {
 

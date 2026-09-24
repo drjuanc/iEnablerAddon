@@ -78,17 +78,51 @@ body.w3-margin-left.customLogin {
     font-size: 0.9rem;
 }
 
-/*Buttons: same height and spacing, wrapping onto new lines on narrow screens*/
+/*Buttons: all five on one row, same height and spacing.
+Sizes measured with Roboto Condensed: the row needs about 505px at 0.9rem, 465px at 0.85rem and
+415px at 0.8rem (5px padding). The size follows the width of the login form (container query), so
+the row fits down to a window 480px wide. Below 480px the buttons wrap and go back to a larger size.*/
+.customLogin form[name="frmLogin"] {
+    container-type: inline-size;
+}
+
 .customLogin form[name="frmLogin"] [type=submit],
 .customLogin form[name="frmLogin"] [type=button] {
     display: inline-block;
     box-sizing: border-box;
     min-height: 2.5rem;
-    margin: 0 0.25rem 0.6rem 0;
-    padding: 0.4rem 1rem !important;
-    font-size: 0.95rem;
+    margin: 0 2px 0.6rem 0;
+    padding: 0.4rem 10px !important;
+    font-family: robotoCondense, sans-serif;
+    font-size: 0.9rem;
     border-radius: 6px;
     white-space: nowrap;
+}
+
+@container (max-width: 509px) {
+    .customLogin form[name="frmLogin"] [type=submit],
+    .customLogin form[name="frmLogin"] [type=button] {
+        padding: 0.4rem 8px !important;
+        font-size: 0.85rem;
+    }
+}
+
+@container (max-width: 464px) {
+    .customLogin form[name="frmLogin"] [type=submit],
+    .customLogin form[name="frmLogin"] [type=button] {
+        padding: 0.4rem 5px !important;
+        font-size: 0.8rem;
+    }
+}
+
+/*Small screens: let the buttons wrap, at a size that is easier to tap*/
+@media (max-width: 479px) {
+    .customLogin form[name="frmLogin"] [type=submit],
+    .customLogin form[name="frmLogin"] [type=button] {
+        margin-right: 0.25rem;
+        padding: 0.4rem 12px !important;
+        font-size: 0.9rem;
+    }
 }
 
 .customLogin form[name="frmLogin"] [type=submit]:focus-visible,
