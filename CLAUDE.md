@@ -12,7 +12,11 @@ Browser extension (Chrome/Edge) that improves the look and usability of the Walt
   - `css/`: styling for login page, main menu (`content.css`), frames (`framef1.css`, `framef3.css`), `accessibility.css` and shared variables
 - `popup/`: extension popup (`popup.html`, `popup.js`, `popup.css`, `other.html`)
 - `assets/`: fonts, icons (16–128 px) and the WSU logo (`pics/wsu-logo-new.png`)
-- `lib/`: third-party libraries (Bootstrap, Bootstrap Table, jQuery). Do not edit these files.
+- `lib/`: third-party libraries. Do not edit these files.
+  - Popup: `bootstrap.min.css`, `bootstrap.bundle.min.js` and `jquery.min.js`
+  - Login page: `bootstrap.css` (content-script stylesheet, `*mi_login*` only)
+  - Portal pages after login (content scripts): no libraries, only our own JS and CSS
+  - No longer used, kept until they are removed: `bootstrap-table.min.js`, `bootstrap-table.min.css`, `bootstrap-table-filter-control.min.js`, `jquery-3.6.3.js`
 
 ## Development environment
 

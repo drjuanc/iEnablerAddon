@@ -55,11 +55,20 @@ No other stylesheet should hard-code a colour: add a variable here instead.*/
     --popupHighlight: rgb(200 128 40 / 26%);        /*--wsu-ochre at 26%*/
     --popupHighlight50: rgb(200 128 40 / 10%);      /*--wsu-ochre at 10%*/
 
+    /*Neutral look of the content frame (F3) when the WSU colours are off: the font, focus and link
+    hover it had with Bootstrap 5.0.2. Not WSU colours, so only used by the neutral rules in framef3.css*/
+    --fontSystem: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", "Liberation Sans", sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
+    --neutral-focus-border: #86B7FE;
+    --neutral-focus-shadow: rgb(13 110 253 / 25%);
+    --neutral-link-hover: #0A58CA;
+
     /*Bootstrap draws some control icons as SVG images, which cannot read a variable, so the colour is in the SVG*/
     /*Switch knob when off: --neutral-500 (%23767676)*/
     --switchKnobOff: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='-4 -4 8 8'%3e%3ccircle r='3' fill='%23767676'/%3e%3c/svg%3e");
     /*Switch knob when on: --neutral-white (%23FFFFFF)*/
     --switchKnobOn: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='-4 -4 8 8'%3e%3ccircle r='3' fill='%23FFFFFF'/%3e%3c/svg%3e");
+    /*Drop-down chevron (F3 selects): --neutral-900 (%23212529)*/
+    --selectChevron: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3e%3cpath fill='none' stroke='%23212529' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M2 5l6 6 6-6'/%3e%3c/svg%3e");
     /*Open accordion chevron: --wsu-maroon (%23501010)*/
     --accordionIconOpen: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' fill='%23501010'%3e%3cpath fill-rule='evenodd' d='M1.646 4.646a.5.5 0 0 1 .708 0L8 10.293l5.646-5.647a.5.5 0 0 1 .708.708l-6 6a.5.5 0 0 1-.708 0l-6-6a.5.5 0 0 1 0-.708z'/%3e%3c/svg%3e");
 

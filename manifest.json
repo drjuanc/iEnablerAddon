@@ -39,9 +39,7 @@
         "assets/fonts/RobotoCondensed-Bold.ttf",
         "assets/fonts/NotoSans-Regular.ttf",
         "assets/fonts/Cabin-Regular.ttf",
-        "assets/pics/wsu-logo-new.png",
-        "lib/css/bootstrap.min.css",
-        "lib/css/bootstrap.min.css.map"
+        "assets/pics/wsu-logo-new.png"
       ],
       "matches": [ "https://*.ieweb.wsu.ac.za/*" ]
     }
@@ -62,7 +60,6 @@
         "content/css/accessibility.css"
       ],
       "js": [
-        "lib/js/jquery.min.js",
         "content/content.js"
       ]
     },

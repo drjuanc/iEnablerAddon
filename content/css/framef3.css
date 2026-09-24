@@ -1,10 +1,212 @@
 /*Colours are defined in variables.css, injected before this file (see manifest.json)*/
 
 /*Content frame (F3) of the main menu page.
-content/content.js adds 'ie-f3' to <html> in this frame, 'ie-theme' when the custom theme is on
-and 'ie-colours' when the custom colours are on. While the theme is on it also links Bootstrap
-and Bootstrap Table into this frame. The theme rules use neutral colours, the custom colour
-rules (.ie-theme.ie-colours) repeat the selector with the WSU palette on top*/
+content/content.js adds 'ie-f3' to <html> in this frame, 'ie-theme' when the modern look is on
+and 'ie-colours' when the WSU colours are on. While the modern look is on it also adds our own
+classes to the portal's controls (ienablerSelect, ienablerBtn, ienablerBtnPrimary, ienablerBtnRight)
+and builds the subjects table search. No library styles are loaded: everything is in this file.
+The theme rules use neutral colours, the custom colour rules (.ie-theme.ie-colours) repeat the
+selector with the WSU palette on top*/
+
+/*=== Base ===*/
+/*The parts of Bootstrap 5.0.2's reset these pages were designed with. :where() keeps them as weak
+as Bootstrap's own, so the portal's class rules and our theme rules still win over them.
+Body and headings are stronger on purpose: Bootstrap, linked last, won over the portal's
+body and h1-h6 rules (12px Arial, 16px bold)*/
+:where(.ie-theme.ie-f3) *, :where(.ie-theme.ie-f3) *::before, :where(.ie-theme.ie-f3) *::after {
+    box-sizing: border-box;
+}
+
+.ie-theme.ie-f3 body {
+    margin: 0;
+    font-family: var(--fontSystem);
+    font-size: 1rem;
+    font-weight: 400;
+    line-height: 1.5;
+    color: var(--txtBody);
+    background-color: var(--neutral-white);
+    -webkit-text-size-adjust: 100%;
+}
+
+/*The portal's .framebody margin won over Bootstrap's*/
+.ie-theme.ie-f3 body.framebody {
+    margin-left: 10px;
+}
+
+.ie-theme.ie-f3 :is(h1, h2, h3, h4, h5, h6) {
+    margin-top: 0;
+    margin-bottom: .5rem;
+    font-weight: 500;
+    line-height: 1.2;
+}
+
+.ie-theme.ie-f3 h1 { font-size: calc(1.375rem + 1.5vw); }
+.ie-theme.ie-f3 h2 { font-size: calc(1.325rem + .9vw); }
+.ie-theme.ie-f3 h3 { font-size: calc(1.3rem + .6vw); }
+.ie-theme.ie-f3 h4 { font-size: calc(1.275rem + .3vw); }
+.ie-theme.ie-f3 h5 { font-size: 1.25rem; }
+.ie-theme.ie-f3 h6 { font-size: 1rem; }
+
+@media (min-width: 1200px) {
+    .ie-theme.ie-f3 h1 { font-size: 2.5rem; }
+    .ie-theme.ie-f3 h2 { font-size: 2rem; }
+    .ie-theme.ie-f3 h3 { font-size: 1.75rem; }
+    .ie-theme.ie-f3 h4 { font-size: 1.5rem; }
+}
+
+:where(.ie-theme.ie-f3) p {
+    margin-top: 0;
+    margin-bottom: 1rem;
+}
+
+:where(.ie-theme.ie-f3) :is(ol, ul) {
+    padding-left: 2rem;
+    margin-top: 0;
+    margin-bottom: 1rem;
+}
+
+:where(.ie-theme.ie-f3) :is(ol ol, ul ul, ol ul, ul ol) {
+    margin-bottom: 0;
+}
+
+:where(.ie-theme.ie-f3) :is(b, strong) {
+    font-weight: bolder;
+}
+
+:where(.ie-theme.ie-f3) small {
+    font-size: .875em;
+}
+
+/*Link colour stays the portal's (its a:link rule won); only the hover colour came from Bootstrap*/
+.ie-theme.ie-f3 a:hover {
+    color: var(--neutral-link-hover);
+}
+
+:where(.ie-theme.ie-f3) hr {
+    margin: 1rem 0;
+    color: inherit;
+    border: 0;
+    border-top: 1px solid;
+    opacity: .25;
+}
+
+:where(.ie-theme.ie-f3) :is(img, svg) {
+    vertical-align: middle;
+}
+
+:where(.ie-theme.ie-f3) table {
+    caption-side: bottom;
+    border-collapse: collapse;
+}
+
+:where(.ie-theme.ie-f3) th {
+    text-align: inherit;
+    text-align: -webkit-match-parent;
+}
+
+:where(.ie-theme.ie-f3) :is(thead, tbody, tfoot, tr, td, th) {
+    border-color: inherit;
+    border-style: solid;
+    border-width: 0;
+}
+
+:where(.ie-theme.ie-f3) label {
+    display: inline-block;
+}
+
+:where(.ie-theme.ie-f3) button {
+    border-radius: 0;
+}
+
+:where(.ie-theme.ie-f3) :is(input, button, select, optgroup, textarea) {
+    margin: 0;
+    font-family: inherit;
+    font-size: inherit;
+    line-height: inherit;
+}
+
+:where(.ie-theme.ie-f3) :is(button, select) {
+    text-transform: none;
+}
+
+:where(.ie-theme.ie-f3) :is(button, [type=button], [type=reset], [type=submit]) {
+    -webkit-appearance: button;
+}
+
+:where(.ie-theme.ie-f3) :is(button, [type=button], [type=reset], [type=submit]):not(:disabled) {
+    cursor: pointer;
+}
+
+:where(.ie-theme.ie-f3) textarea {
+    resize: vertical;
+}
+
+:where(.ie-theme.ie-f3) fieldset {
+    min-width: 0;
+    padding: 0;
+    margin: 0;
+    border: 0;
+}
+
+:where(.ie-theme.ie-f3) iframe {
+    border: 0;
+}
+
+:where(.ie-theme.ie-f3) [hidden] {
+    display: none !important;
+}
+
+/*=== Controls ===*/
+/*Drop-downs (academic year, exam year, exam month, exam type)*/
+.ie-theme.ie-f3 .ienablerSelect {
+    display: block;
+    width: 100%;
+    padding: .375rem 2.25rem .375rem .75rem;
+    font-size: 1rem;
+    font-weight: 400;
+    line-height: 1.5;
+    color: var(--txtBody);
+    background-color: var(--neutral-white);
+    background-image: var(--selectChevron);
+    background-repeat: no-repeat;
+    background-position: right .75rem center;
+    background-size: 16px 12px;
+    border: 1px solid var(--neutral-300);
+    border-radius: .25rem;
+    appearance: none;
+}
+
+.ie-theme.ie-f3 .ienablerSelect:focus {
+    border-color: var(--neutral-focus-border);
+    outline: 0;
+    box-shadow: 0 0 0 .25rem var(--neutral-focus-shadow);
+}
+
+/*Buttons. Their colours are in the button rules further down*/
+.ie-theme.ie-f3 .ienablerBtn {
+    display: inline-block;
+    padding: .375rem .75rem;
+    font-size: 1rem;
+    font-weight: 400;
+    line-height: 1.5;
+    color: var(--txtBody);
+    text-align: center;
+    text-decoration: none;
+    vertical-align: middle;
+    cursor: pointer;
+    user-select: none;
+    border-radius: .25rem;
+}
+
+.ie-theme.ie-f3 .ienablerBtn:focus {
+    outline: 0;
+    box-shadow: 0 0 0 .25rem var(--neutral-focus-shadow);
+}
+
+.ie-theme.ie-f3 .ienablerBtn:disabled {
+    pointer-events: none;
+    opacity: .65;
+}
 
 /*=== Custom theme ===*/
 .ie-theme.ie-f3 td.ie_process_hdr {
@@ -250,10 +452,6 @@ rules (.ie-theme.ie-colours) repeat the selector with the WSU palette on top*/
     text-align: center;
 }
 
-.ie-theme.ie-f3 .form-control {
-    border: 2px solid var(--inputBorder) !important;
-}
-
 .ie-theme.ie-f3 .ie_process_desc {
     padding: 2px 10px;
 }
@@ -282,25 +480,26 @@ rules (.ie-theme.ie-colours) repeat the selector with the WSU palette on top*/
     margin-bottom: 2rem;
 }
 
-/*Overriding Bootstrap styles*/
-.ie-theme.ie-f3 .btn-primary {
+/*Main action button*/
+.ie-theme.ie-f3 .ienablerBtnPrimary {
     background-color: var(--neutral-600) !important;
     border-color: var(--neutral-600) !important;
     color: var(--neutral-white) !important;
 }
 
-.ie-theme.ie-f3 .btn-primary:hover, .ie-theme.ie-f3 .btn-primary:active, .ie-theme.ie-f3 .btn-primary:focus {
+.ie-theme.ie-f3 .ienablerBtnPrimary:hover, .ie-theme.ie-f3 .ienablerBtnPrimary:active, .ie-theme.ie-f3 .ienablerBtnPrimary:focus {
     background-color: var(--neutral-900) !important;
     border-color: var(--neutral-900) !important;
     color: var(--neutral-white) !important;
 }
 
-.ie-theme.ie-f3 .btn-right {
+.ie-theme.ie-f3 .ienablerBtnRight {
     float: right;
     margin-right: 100px;
 }
 
-.ie-theme.ie-f3 .btnPaste {
+/*"Paste from Excel" button, above the marks form*/
+.ie-theme.ie-f3 #btnPaste {
     margin-bottom: 8px;
 }
 
@@ -384,11 +583,7 @@ rules (.ie-theme.ie-colours) repeat the selector with the WSU palette on top*/
 }
 
 /*Forms and controls*/
-.ie-theme.ie-colours.ie-f3 .form-control {
-    border-color: var(--primaryColor) !important;
-}
-
-.ie-theme.ie-colours.ie-f3 .form-select:focus, .ie-theme.ie-colours.ie-f3 .form-control:focus {
+.ie-theme.ie-colours.ie-f3 .ienablerSelect:focus {
     border-color: var(--focusColor) !important;
     outline: 0 !important;
     box-shadow: 0 0 0 0.25rem var(--boxShadow) !important;
@@ -415,15 +610,15 @@ rules (.ie-theme.ie-colours) repeat the selector with the WSU palette on top*/
     border: 1px solid var(--primaryComp) !important;
 }
 
-/*Overriding Bootstrap styles*/
-.ie-theme.ie-colours.ie-f3 .btn-primary {
+/*Main action button*/
+.ie-theme.ie-colours.ie-f3 .ienablerBtnPrimary {
     background-color: var(--primaryActive) !important;
     border-color: var(--primaryActive) !important;
     color: var(--neutral-white) !important;
     filter: drop-shadow(4px 4px 4px var(--highlighted));
 }
 
-.ie-theme.ie-colours.ie-f3 .btn-primary:hover, .ie-theme.ie-colours.ie-f3 .btn-primary:active, .ie-theme.ie-colours.ie-f3 .btn-primary:focus {
+.ie-theme.ie-colours.ie-f3 .ienablerBtnPrimary:hover, .ie-theme.ie-colours.ie-f3 .ienablerBtnPrimary:active, .ie-theme.ie-colours.ie-f3 .ienablerBtnPrimary:focus {
     background-color: var(--primaryComp) !important;
     color: var(--primaryHigh) !important;
     font-weight: 600 !important;

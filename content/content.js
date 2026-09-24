@@ -18,6 +18,22 @@
     const applied = { theme: false, a11y: false };
     const undo = { theme: [], a11y: [] };
 
+    //Tooltips for the mark type codes in the subjects table
+    const MARK_TYPES = {
+        NF: 'MTA - Nelson Mandela Drive',
+        MD: 'MD - End of Module Test',
+        MR: 'MR - POMR or Patient Presentation',
+        TC: 'TC - WSU Tutor Score',
+        ET: 'ET - End of Didactic Teaching Test',
+        NW: 'NW - Learning Need Worksheet',
+        OS: 'OS - OSCE Mark',
+        LB: 'LB - Procedure Logbook',
+        DP: 'DP - District Hospital Score',
+        LC: 'LC - Elective mark',
+        '0': 'Year mark',
+        S1: 'S1 - Supplementary exam'
+    };
+
     //Label of the number field for each login type (value of the 'numtype' radio)
     const NUMBER_LABELS = {
         S: 'Student number',
@@ -326,19 +342,13 @@
         logo.classList.add('wsuLogoOnDark');
     }
 
-    //Content frame: Bootstrap, form and button classes, the notice box and the subjects table
+    //Content frame: classes for the controls (styled in framef3.css), the notice box and the subjects table
     function themeF3() {
-        //Bootstrap, for the form and button classes below
-        let link = document.createElement('link');
-        link.rel = 'stylesheet';
-        link.href = chrome.runtime.getURL('lib/css/bootstrap.min.css');
-        addNode('theme', link, document.head);
-
         //Academic year, exam year, exam month and exam type
-        ['x_cyr', 'x_exmcyr', 'x_exm1', 'x_et'].forEach(name => addClasses('theme', document.getElementsByName(name)[0], ['form-select']));
+        ['x_cyr', 'x_exmcyr', 'x_exm1', 'x_et'].forEach(name => addClasses('theme', document.getElementsByName(name)[0], ['ienablerSelect']));
         //The first submit is the main action. Not the "Paste from Excel" button added above the form
-        addClasses('theme', document.querySelector('input[type=submit]:not(#btnPaste)'), ['btn-primary', 'btn-right']);
-        document.querySelectorAll('input[type=button], input[type=reset], input[type=submit]').forEach(button => addClasses('theme', button, ['btn']));
+        addClasses('theme', document.querySelector('input[type=submit]:not(#btnPaste)'), ['ienablerBtnPrimary', 'ienablerBtnRight']);
+        document.querySelectorAll('input[type=button], input[type=reset], input[type=submit]').forEach(button => addClasses('theme', button, ['ienablerBtn']));
 
         //Notice box: the table after ErrorDiv holds the note text
         let errorDiv = document.getElementById('ErrorDiv');
@@ -354,22 +364,6 @@
             }
         });
     }
-
-    //Tooltips for the mark type codes in the subjects table
-    const MARK_TYPES = {
-        NF: 'MTA - Nelson Mandela Drive',
-        MD: 'MD - End of Module Test',
-        MR: 'MR - POMR or Patient Presentation',
-        TC: 'TC - WSU Tutor Score',
-        ET: 'ET - End of Didactic Teaching Test',
-        NW: 'NW - Learning Need Worksheet',
-        OS: 'OS - OSCE Mark',
-        LB: 'LB - Procedure Logbook',
-        DP: 'DP - District Hospital Score',
-        LC: 'LC - Elective mark',
-        '0': 'Year mark',
-        S1: 'S1 - Supplementary exam'
-    };
 
     //Subjects table (the first .rltable): a real header, tooltips, and a search box that filters
     //the rows. The rows stay the portal's own elements, so the subject links (do_menu) work as
@@ -584,26 +578,44 @@
         });
     }
 
-    //This section paste from excel funtionality
-    var markForm = $('form[name="frmOne"]').eq(0);
-    var allMarksUrl = markForm.attr('action');
-    
+    /*=== Paste from Excel ===*/
+    //On the pages that enter the marks of many students at once, a button above the form fills
+    //the mark fields from a column copied from Excel, in the order the students appear
+    var markForm = document.querySelector('form[name="frmOne"]');
+    var allMarksUrl = markForm ? markForm.getAttribute('action') : undefined;
+
     if (allMarksUrl == 'w26pkg.w26savemulti' || allMarksUrl == 'w06pkg.w06savemulti' || allMarksUrl == 'web.w06pkg.w06_upd_multi_proc') {
+        //A plain button: it sits outside the form, so it never submitted anything
+        var btnPaste = document.createElement('input');
+        btnPaste.id = 'btnPaste';
+        btnPaste.type = 'button';
+        btnPaste.value = 'Paste from Excel';
+        btnPaste.className = 'ienablerBtn ienablerBtnPrimary ienablerBtnRight';
+        markForm.before(btnPaste);
 
-        $('form[name="frmOne"]').eq(0).before('<input id = "btnPaste" type="submit" value="Paste from Excel" onclick="#" class="btn btn - primary btn - right">');
-
+        btnPaste.addEventListener('click', function () {
+            var marks = window.prompt("Paste from Excel.\nPlease make sure the student marks are in the same order they appear on this page", "Marks");
+            //Cancel gives null, which passes this check: fillUpFields then does nothing, but the page
+            //still scrolls to the bottom, as it always has
+            if (typeof marks !== 'undefined' && marks !== '') {
+                fillUpFields(marks, allMarksUrl);
+                window.scrollTo(0, document.body.scrollHeight + 50);
+            }
+        });
     }
-
-    $('#btnPaste').click(function () {
-        var marks = window.prompt("Paste from Excel.\nPlease make sure the student marks are in the same order they appear on this page", "Marks");
-        if (typeof marks !== 'undefined' && marks !== '') {
-            fillUpFields(marks, allMarksUrl);
-            window.scrollTo(0, document.body.scrollHeight + 50);
-        }
-    });
 
     function removeExtraTabs(string) {
         return string.replace(new RegExp("\t\t", 'g'), "\t");
+    }
+
+    //Shown on the page, as jQuery's :visible (so hidden fields and type="hidden" are left out)
+    function isVisible(element) {
+        return !!(element.offsetWidth || element.offsetHeight || element.getClientRects().length);
+    }
+
+    //Set a field's value by position; like jQuery's .eq(i).val(), a position past the end does nothing
+    function setValue(fields, index, value) {
+        if (fields[index]) fields[index].value = value;
     }
 
     function fillUpFields(marks) {
@@ -612,13 +624,14 @@
         var rows = data.split("\n"); //Get the rows from the excel
 
         //Get the list of inputs from the form
+        var fieldList, fieldChanged;
         if (allMarksUrl == 'web.w06pkg.w06_upd_multi_proc') {
-            var fieldList = $('input[name="x_multi_iahymark"]:not(:hidden)');
-            var fieldChanged = $('input[name="x_rec_changed"]'); 
+            fieldList = Array.from(document.querySelectorAll('input[name="x_multi_iahymark"]')).filter(isVisible);
+            fieldChanged = Array.from(document.querySelectorAll('input[name="x_rec_changed"]'));
         } else {
-            var fieldList = $('input[name="x_mark"]');
-        }              
-      
+            fieldList = Array.from(document.querySelectorAll('input[name="x_mark"]'));
+        }
+
         var field = 0;
 
         //Compare the number of rows from the excel with the number od students in the page
@@ -632,8 +645,7 @@
             if (!response) return;
         }
 
-
-        for (var y in rows) { //For every row
+        for (var y = 0; y < rows.length; y++) { //For every row
             rows[y] = removeExtraTabs(rows[y]); //every column, but there should be only one column
             var cells = rows[y].split("\t"); //Content of the cell
 
@@ -642,16 +654,13 @@
                 return;
             }
 
-            for (var x in cells) { 
-                fieldList.eq(field).val(cells[x]); //fill up the input
-               if (allMarksUrl == 'web.w06pkg.w06_upd_multi_proc') {
-                   fieldChanged.eq(field+1).val("Y");
+            for (var x = 0; x < cells.length; x++) {
+                setValue(fieldList, field, cells[x]); //fill up the input
+                if (allMarksUrl == 'web.w06pkg.w06_upd_multi_proc') {
+                    setValue(fieldChanged, field + 1, "Y");
                 }
-
-                
             }
             field++;
-
         }
     }
 })();
