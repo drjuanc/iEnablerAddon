@@ -1,0 +1,84 @@
+{
+  "name": "Pimp my iEnabler",
+  "description": "Making the iEnabler interface a bit more user frindly",
+  "version": "1.0",
+  "author": "Dr Alonso",
+  "manifest_version": 3,
+
+  "icons": {
+    "16": "assets/icons/icon-16.png",
+    "32": "assets/icons/icon-32.png",
+    "48": "assets/icons/icon-48.png",
+    "128": "assets/icons/icon-128.png"
+  },
+
+  "permissions": [
+    "storage",
+    "tabs",
+    "activeTab",
+    "notifications",
+    "scripting"
+  ],
+  "host_permissions": [
+    "https://*.ieweb.wsu.ac.za/*"
+
+  ],
+  "background": {
+    "service_worker": "background.js"
+  },
+
+  "action": {
+    "default_title": "Pimp my iEnabler",
+    "default_icon": "assets/icons/icon.png",
+    "default_popup": "popup/popup.html"
+  },
+
+  "web_accessible_resources": [
+    {
+      "resources": [
+        "content/css/variables.css",
+        "content/css/framef1.css",
+        "content/css/framef3.css",
+        "/assets/fonts/RobotoCondensed-Regular.ttf",
+        "/assets/fonts/RobotoCondensed-Bold.ttf",
+        "/assets/fonts/NotoSans-Regular.ttf",
+        "/assets/fonts/Cabin-Regular.ttf",
+        "/assets/pics/wsulogo.jpg",
+        "/assets/pics/wsulogoinv.jpg",
+        "/assets/pics/wsuinv.png",
+        "lib/css/bootstrap.min.css",
+        "lib/css/bootstrap.min.css.map",
+        "lib/css/bootstrap-table.min.css",
+        "lib/js/jquery.min.js",
+        "lib/js/bootstrap.bundle.min.js",
+        "lib/js/bootstrap-table.min.js",
+        "content/js/frameF3Loader.js",
+        "content/js/tableLoader.js"
+
+      ],
+      "matches": [ "https://*.ieweb.wsu.ac.za/*" ]
+    }
+  ],
+
+  "content_scripts": [
+    {
+      "all_frames" : true,
+      "matches": [
+        "https://ieweb.wsu.ac.za/*" 
+      ],
+      "css": [
+        "content/css/content.css",
+        "content/css/login.css",
+        "lib/css/bootstrap.css",
+        "lib/css/bootstrap-table.min.css"      
+      ],
+      "js": [
+        "lib/js/jquery.min.js",
+        "content/content.js",
+        "content/js/frameF3Loader.js",
+        "lib/js/bootstrap.bundle.min.js",
+        "lib/js/bootstrap-table.min.js"
+      ]
+    }
+  ]
+}

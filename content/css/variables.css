@@ -1,0 +1,35 @@
+/*Defining colors and spaces in variables*/
+:root {
+    --primaryColor: #0b603c;
+    --primaryComp: #dffff2;
+    --txtPrimaryMatch: #c2e3d6;
+    --txtPrimary03: rgb(194 227 214 / 30%);
+    --primaryActive: #2c7759;
+    --primaryHigh: #094f34;
+    --complement: #eaeaea;
+    --highlighted: #18221e;
+    --complementHigh: #c7501f;
+    --complementMed: #ffe6ac;
+    --allGrey: #c9c9c9;
+    --boxShadow: rgb(11 96 60 / 40%);
+}
+
+@font-face {
+    font-family: robotoCondense;
+    font-weight: 400;
+    src: url('/assets/fonts/RobotoCondensed-Regular.ttf');
+}
+@font-face {
+    font-family: robotoCondense;
+    font-weight: 700;
+    src: url('/assets/fonts/RobotoCondensed-Bold.ttf');
+}
+
+@font-face {
+    font-family: NotoSans;
+    src: url('/assets/fonts/NotoSans-Regular.ttf');
+}
+@font-face {
+    font-family: Cabin;
+    src: url('/assets/fonts/Cabin-Regular.ttf');
+}

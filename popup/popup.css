@@ -1,0 +1,72 @@
+/*==Applicable to the popup, where the extension config lies==*/
+
+.no-border{
+    border: 0 !important;
+}
+/*Global colors*/
+:root {
+    --primary: #1872b9;
+    --secondary: #31353D;
+    --highlighted: #0dcaf042;
+    --highlighted50: #0dcaf01a;
+}
+
+body{
+    width: 500px;
+    height: 500px;
+}
+
+/*Utility clases for formating*/
+/*Alighments*/
+.txtRight {
+    text-align: right !important;
+}
+
+.txtLeft {
+    text-align: left !important;
+}
+
+/*Background colors*/
+.bgHigh{
+    background-color: var(--highlighted) !important;
+}
+.bgHigh50 {
+    background-color: var(--highlighted50) !important;
+}
+
+/*Text colors*/
+.ctGrey50 {
+    color: grey;
+}
+
+/*text sizes*/
+.txtSmall {
+    font-size: 0.6em;
+}
+.txtMedG, h5 {
+    font-size: 1em !important;
+}
+
+.txtMedP, h6 {
+    font-size: 0.8em !important;
+}
+
+
+/*Redefining the body card*/
+.card-body{
+    font-size:0.9em;  
+}
+
+.padd05 {
+    padding: 0.2rem 0.6rem !important;
+}
+/*images*/
+.card-header img {
+    float: left;
+    margin-right: 10px;
+}
+
+.form-check.form-switch {
+    text-align: left !important;
+}
+

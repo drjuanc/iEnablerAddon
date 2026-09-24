@@ -1,0 +1,88 @@
+/*Defining colors and spaces in variables*/
+:root {
+    /*--primaryColor: #1b72b6*/
+    --primaryColor: #0b603d;
+    /* --txtPrimaryMatch: #fff;*/
+    --txtPrimaryMatch: #c2e3d6;
+}
+
+/*=== Custon Theme =====*/
+/*Bar on top*/
+ .customTheme #fra_header {
+    border-bottom: 1px solid #ccc;
+    border-top: 0;
+    display: flex;
+    flex-wrap: wrap;
+    align-content: flex-end;
+    flex-direction: row;
+    justify-content: space-between;
+    padding: 0 20px 10px 20px;
+    height: 3em;
+    margin-bottom: 5px;
+}
+/*Push menu to the left hidding some invisible images */
+.customTheme .col-sm-12 > img{
+    display: none;
+}
+
+
+/*Bar on top*/
+.customTheme #fra_header {
+    border-bottom: 1px solid #ccc;
+    border-top: 0;
+    display: flex;
+    flex-wrap: wrap;
+    align-content: flex-end;
+    flex-direction: row;
+    justify-content: space-between;
+    padding: 0 20px 10px 20px;
+    height: 3em;
+}
+
+/*Fixing logo*/
+.customTheme .flex-container>div {
+    text-align: center;
+    width: 100%;
+}
+
+.customTheme .flex-container img {
+    height: unset !important;
+    width: 280px !important;
+}
+
+/*=== Size margin and paddings ===*/
+/*width of the left sidebar*/
+.customTheme .w3-large {
+    width: 100%;
+}
+
+
+.customTheme  #mySidebar {
+    width: 280px !important;
+    /*margin-left: -20px;*/
+    height: 100vw;
+}
+body.customTheme .w3-main{
+    margin-left: 280px !important;
+}
+
+.customTheme .w3-container, .w3-panel {
+    padding: 0 !important;
+}
+
+.customTheme .flex-container > * {
+    margin-top: 20px !important;
+}
+
+
+/*=== Custon Colors =====*/
+.customTheme nav.w3-sidebar {
+    background-color: var(--primaryColor) !important;
+}
+
+@media (max-width: 992px){
+    body.customTheme .w3-main{
+        margin-left: 0 !important;
+    }
+
+}

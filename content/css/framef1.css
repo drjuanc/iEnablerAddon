@@ -1,0 +1,112 @@
+@import "variables.css"; /* Import the variables */
+
+/*===Custom colors===*/
+body {
+    background-color: unset !important;
+    font-size: .9rem;
+    line-height: 1.4rem;
+    letter-spacing: -0.3px;
+}
+
+a, a:link, a:visited {
+    color: var(--txtPrimaryMatch) !important;
+}
+
+.col-sm-12 img {
+    filter: invert(1) opacity(0.7);
+}
+
+.menuLvlM1:hover, .menuLvlM2:hover, .menuLvlM3:hover, 
+.menuLvlM4:hover, .menuLvlM5:hover, .menuLvlU1:hover, 
+.menuLvlU2:hover, .menuLvlU3:hover, .menuLvlU4:hover, 
+.menuLvlU5:hover {
+    background-color: var(--primaryActive) !important;
+}
+
+.w3-blue {
+    background-color: var(--primaryHigh) !important;
+}
+
+body > .w3-tag:last-of-type .w3-tag {
+    background-color: var(--primaryComp) !important;
+    color: var(--primaryColor) !important;
+    padding: 5px 10px !important;
+    font-weight: 700;
+    font-family: 'Cabin';
+    letter-spacing: 1px;
+    text-transform: uppercase;
+}
+
+body > .w3-tag:last-of-type div.w3-tag:hover {
+    background-color: var(--primaryHigh) !important;
+    color: var(--txtPrimaryMatch) !important;
+}
+body > .w3-tag:last-of-type{
+    width: unset;
+
+}
+
+#menu{
+    padding-left: 0;
+}
+
+/*=== text fixes ===*/
+
+a:link, a:visited {
+    font-family: robotoCondense !important;
+}
+
+.w3-border {
+    width: 100% !important;
+}
+
+/* === Element positioning ==== */
+
+.menuLvlM1, .menuLvlU2, .menuLvlM2, menuId0 {
+    padding: 5px !important;
+}
+.menuLvlU2{
+    margin-left: 14px;
+}
+.menuLvlU3{
+    margin-left: 18px;
+}
+
+.col-sm-12 {
+    margin: 20px 0 10px 0;
+    padding-right: 0;
+}
+
+.col-sm-12 > * {
+    margin-top: 12px !important;
+}
+
+.col-sm-12 > img{
+    display: none;
+}
+
+.w3-blue{
+    display: block;
+    width: 150px;
+    padding: 5px !important;
+    margin: auto;
+    padding: 3px !important;
+}
+
+.menuLvlM1:hover, .menuLvlM2:hover, .menuLvlM3:hover, .menuLvlM4:hover, .menuLvlM5:hover, .menuLvlU1:hover, .menuLvlU2:hover, .menuLvlU3:hover, .menuLvlU4:hover, .menuLvlU5:hover {
+    border-radius: 6px;
+    text-decoration: none;
+}
+
+body > .w3-tag:last-of-type {
+    float: right;
+    margin: 20px 10px;
+}
+
+body > .w3-tag:first-of-type {
+    position: fixed;
+    bottom: 100px;
+    width: 90%;
+    left: 25px;
+
+}

@@ -1,0 +1,270 @@
+@import "variables.css"; /* Import the variables */
+
+td.ie_process_hdr{
+    background-color: var(--primaryColor);
+    color: var(--txtPrimaryMatch);
+}
+
+
+td.mbtop{
+    font-family: 'Cabin';
+    font-size: 1rem;
+    padding-top: 20px;
+}
+
+td.mbbot{
+    border: 0 !important;
+    font-family: 'NotoSans';
+    font-size: .9rem;
+}
+body>h1{
+    margin: 10px 20px 20px 10px;
+    background-color: var(--primaryColor);
+    padding: 10px;
+    color: var(--txtPrimaryMatch);
+    font-size: calc(1rem + 1.2vw);
+}
+
+/*Fixing all this tables*/
+/*WHO IN THE XXI CENTURY STILL USE TABLES FOR LAYOUT, GOD HELP THIS PERSON*/
+table.w3-table-all td>h1{
+    position: fixed;
+    top: 50px;
+    right: 20px;
+    background-color: var(--primaryComp);
+    padding: 10px;
+    border: 2px solid var(--primaryActive);
+}
+
+table.mi_userdet td{
+    padding: 10px;
+    font-size: .8rem;
+    line-height: 1.2rem;
+    border: 2px solid var(--primaryActive);
+}
+table.mi_userdet{
+    margin-left: 10px;
+    background-color: var(--complement);
+    border: none;
+}
+
+td.notetext{
+    padding: 20px;
+    background-color: var(--complementMed);
+}
+table.noticeBox{
+    margin: 20px;
+    width: 96%;
+}
+table.datadisp td{
+    padding: 5px;
+}
+
+table.ctx_table{
+    border:unset;
+    max-width: 400px;
+}
+
+/*Links*/
+a, a:active, a:visited{
+    color: var(--primaryColor) !important;
+    text-decoration: none;
+}
+a:hover{
+    color: var(--complementHigh) !important;
+    text-decoration: underline;
+}
+
+/*Tool tip*/
+ /*So many nested tables GOD HELP ME*/
+.popUpLevel0{
+    /*margin: unset;*/
+    width: unset;
+    background-color: var(--primaryColor);
+    width: 100%;
+    border-top: 0 !important;
+    border-collapse: collapse;
+}
+
+.popUpLevel0 td{
+    padding: 0;
+}
+
+.popUpHeader td:first-of-type {
+    background-color: var(--primaryColor) !important;
+    width: 80%;
+}
+
+.popUpHeader td:last-of-type {
+    background-color: var(--complementHigh) !important;
+    color: white !important;
+    border-top: 2px solid var(--complementHigh) !important;
+    text-align: center !important;
+}
+
+/*GOOD LORD the tag FONT is not longer supported in HTML5*/
+.popUpHeader font{
+    color: white !important;
+    font-family: 'robotoCondense';
+    font-size: .8rem;
+    text-transform: uppercase;
+}
+
+.popUpContent a {
+    font-family: 'Cabin';
+    font-size: .9rem;
+}
+.popUpBody{
+    border: 2px solid var(--primaryColor);
+    border-top: 0;
+}
+
+
+#overDiv table td table td {
+    padding: 5px;
+    background-color: var(--bs-gray-100);
+}
+
+
+.mbbot table td.ie_process, .mbbot table td.ie_process_desc,
+table.ctx_table td
+{
+    border-bottom: 1px dotted var(--complementHigh);
+}
+
+td.ctx_colhdr{
+    width: 150px;
+}
+
+.fixed-table-body{
+    margin-bottom: 10rem;
+}
+
+/*Table with the subjects*/
+#tbSubjects{
+    margin-top: 0;
+    max-width: 95%;
+    border-collapse: separate;
+    border: 2px solid var(--bs-gray-200);
+    border-radius: 10px;
+    font-family: 'robotoCondense';
+    color: var(--bs-gray-600);
+}
+
+#tbSubjects thead th{
+    padding-left: 5px;
+    background-color: var(--bs-gray-100);
+    border-bottom: 2px solid var(--bs-gray-200);
+}
+#tbSubjects thead{
+    height: 50px;
+    vertical-align: middle;
+    font-family: 'robotoCondense';
+    font-size: 1.1rem;
+    font-weight: 600;
+}
+#tbSubjects th:first-of-type {
+    border-top-left-radius: 10px !important;
+    /*border-left: 2px solid var(--bs-gray-200);*/
+}
+
+#tbSubjects th:last-of-type {
+    border-top-right-radius: 10px !important;
+    /*border-right: 2px solid var(--bs-gray-200);*/
+}
+
+#tbSubjects tr{
+    border-color: var(--bs-gray-200);
+}
+
+#tbSubjects td:not(:nth-of-type(1)):not(:nth-of-type(2)){
+    text-align: center;
+}
+.table-hover>tbody>tr:hover{
+    background-color: var(--txtPrimary03);
+}
+#tbSubjects.table thead th .th-inner{
+    padding: .35rem !important;
+}
+.rowover{
+    background-color: unset !important;
+}
+/*Forms and controls*/
+form[name="qrycrit"]>table.datadisp{
+    width: 350px;
+    margin: auto;
+}
+
+form[name="qrycrit"]{
+    text-align: center;
+}
+.form-control{
+    border: 2px solid var(--primaryColor)  !important;
+}
+.form-select:focus, .form-control:focus{
+    border-color: var(--primaryComp) !important;
+    outline: 0 !important;
+
+    box-shadow: 0 0 0 0.25rem rgb(11 96 60 / 40%) !important;
+}
+input.form-control.search-input::placeholder {
+    color: var(--primaryColor);
+}
+
+.ie_process_desc{
+    padding: 2px 10px;
+}
+
+/*To all default buttons*/
+[type=button]:not(:disabled), [type=reset]:not(:disabled), [type=submit]:not(:disabled), button:not(:disabled) {
+    background-color: var(--primaryComp);
+    border: 1px solid var(--primaryColor) !important;
+    filter: unset !important;
+}
+
+/*default buttons over and active*/
+[type=button]:not(:disabled):hover, [type=reset]:not(:disabled):hover, [type=submit]:not(:disabled):hover, button:not(:disabled):hover,
+[type=button]:not(:disabled):active, [type=reset]:not(:disabled):active, [type=submit]:not(:disabled):active, button:not(:disabled):active,
+[type=button]:not(:disabled):focus, [type=reset]:not(:disabled):focus, [type=submit]:not(:disabled):focus, button:not(:disabled):focus {
+    color: #212529;
+    background: var(--primaryColor);
+    color: var(--primaryComp);
+    box-shadow: 0 0 0.5rem 0.25rem var(--boxShadow) !important;
+    border: 1px solid var(--primaryComp) !important;
+}
+/*Form by default*/
+form[name="frmOne"] {
+    margin-bottom: 2rem;
+}
+
+/*Overriding Boostrap styles*/
+.btn-primary {
+    background-color: var(--primaryActive) !important;
+    border-color: var(--primaryActive) !important;
+    filter: drop-shadow(4px 4px 4px var(--highlighted));
+}
+
+.btn-primary:hover, .btn-primary:active, .btn-primary:focus {
+    background-color: var(--primaryComp) !important;
+    color: var(--primaryHigh) !important;
+    font-weight: 600 !important;
+    border: 1px solid var(--primaryColor) !important;
+    outline: 0 !important;
+    filter: unset !important;
+    border-color: var(--primaryActive) !important;
+    box-shadow: 0 0 0.5rem 0.25rem var(--boxShadow) !important;
+
+}
+.btn-right{
+    float:right;
+    margin-right: 100px;
+}
+
+.btnPaste{
+    margin-bottom:8px
+}
+/*Pop up menu on subject clicks*/
+#overDiv {
+    left: 10px !important;
+}
+
