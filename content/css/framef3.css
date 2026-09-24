@@ -141,57 +141,99 @@ rules (.ie-theme.ie-colours) repeat the selector with the WSU palette on top*/
     width: 150px;
 }
 
-.ie-theme.ie-f3 .fixed-table-body {
-    margin-bottom: 10rem;
+/*Table with the subjects (see subjectsTable in content/content.js)*/
+/*Search box and result count above the table*/
+.ie-theme.ie-f3 .ienablerTableTools {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: .5rem 1rem;
+    max-width: 95%;
+    margin: 1rem 0 .75rem 0;
 }
 
-/*Table with the subjects*/
+.ie-theme.ie-f3 .ienablerTableTools label {
+    font-weight: 600;
+    color: var(--txtBody);
+}
+
+.ie-theme.ie-f3 #ienablerSearch {
+    width: 18rem;
+    max-width: 100%;
+    padding: .35rem .6rem;
+    border: 1px solid var(--inputBorder);
+    border-radius: 6px;
+    background-color: var(--neutral-white);
+    color: var(--txtBody);
+}
+
+.ie-theme.ie-f3 #ienablerSearch:focus {
+    outline: 0;
+    border-color: var(--focusColor);
+    box-shadow: var(--focusRing);
+}
+
+.ie-theme.ie-f3 .ienablerCount {
+    margin: 0;
+    color: var(--txtMuted);
+}
+
+/*Room under the table, so the pop-up menu of the last subjects is not cut off*/
 .ie-theme.ie-f3 #tbSubjects {
-    margin-top: 0;
+    margin: 0 0 10rem 0;
     max-width: 95%;
     border-collapse: separate;
+    border-spacing: 0;
     border: 2px solid var(--neutral-200);
     border-radius: 10px;
     font-family: 'robotoCondense';
     color: var(--neutral-600);
 }
 
-.ie-theme.ie-f3 #tbSubjects thead th {
-    padding-left: 5px;
-    background-color: var(--neutral-100);
-    border-bottom: 2px solid var(--neutral-200);
-}
-
 .ie-theme.ie-f3 #tbSubjects thead {
-    height: 50px;
     vertical-align: middle;
-    font-family: 'robotoCondense';
     font-size: 1.1rem;
     font-weight: 600;
 }
 
+/*Header and data cells aligned the same way in every column*/
+.ie-theme.ie-f3 #tbSubjects th, .ie-theme.ie-f3 #tbSubjects td {
+    padding: .5rem .75rem;
+    text-align: left;
+    vertical-align: middle;
+}
+
+.ie-theme.ie-f3 #tbSubjects thead th {
+    height: 50px;
+    background-color: var(--neutral-100);
+    border-bottom: 2px solid var(--neutral-300);
+}
+
 .ie-theme.ie-f3 #tbSubjects th:first-of-type {
-    border-top-left-radius: 10px !important;
+    border-top-left-radius: 8px;
 }
 
 .ie-theme.ie-f3 #tbSubjects th:last-of-type {
-    border-top-right-radius: 10px !important;
+    border-top-right-radius: 8px;
 }
 
-.ie-theme.ie-f3 #tbSubjects tr {
-    border-color: var(--neutral-200);
+/*Row separators*/
+.ie-theme.ie-f3 #tbSubjects tbody td {
+    border-bottom: 1px solid var(--borderLight);
 }
 
-.ie-theme.ie-f3 #tbSubjects td:not(:nth-of-type(1)):not(:nth-of-type(2)) {
-    text-align: center;
+.ie-theme.ie-f3 #tbSubjects tbody tr:last-child td {
+    border-bottom: 0;
 }
 
-.ie-theme.ie-f3 .table-hover > tbody > tr:hover {
+/*Rows left out by the search*/
+.ie-theme.ie-f3 #tbSubjects tr[hidden] {
+    display: none;
+}
+
+/*Row hover on the cells, so the portal's own .rowover class cannot cancel it*/
+.ie-theme.ie-f3 #tbSubjects tbody tr:hover > td {
     background-color: var(--neutral-100);
-}
-
-.ie-theme.ie-f3 #tbSubjects.table thead th .th-inner {
-    padding: .35rem !important;
 }
 
 .ie-theme.ie-f3 .rowover {
@@ -329,8 +371,16 @@ rules (.ie-theme.ie-colours) repeat the selector with the WSU palette on top*/
     border-bottom-color: var(--primaryColor);
 }
 
-.ie-theme.ie-colours.ie-f3 .table-hover > tbody > tr:hover {
+.ie-theme.ie-colours.ie-f3 #tbSubjects tbody tr:hover > td {
     background-color: var(--txtPrimary03);
+}
+
+.ie-theme.ie-colours.ie-f3 #ienablerSearch {
+    border-color: var(--primaryColor);
+}
+
+.ie-theme.ie-colours.ie-f3 #ienablerSearch:focus {
+    border-color: var(--focusColor);
 }
 
 /*Forms and controls*/
@@ -344,9 +394,6 @@ rules (.ie-theme.ie-colours) repeat the selector with the WSU palette on top*/
     box-shadow: 0 0 0 0.25rem var(--boxShadow) !important;
 }
 
-.ie-theme.ie-colours.ie-f3 input.form-control.search-input::placeholder {
-    color: var(--primaryColor);
-}
 
 /*To all default buttons*/
 .ie-theme.ie-colours.ie-f3 [type=button]:not(:disabled), .ie-theme.ie-colours.ie-f3 [type=reset]:not(:disabled),

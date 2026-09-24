@@ -41,8 +41,7 @@
         "assets/fonts/Cabin-Regular.ttf",
         "assets/pics/wsu-logo-new.png",
         "lib/css/bootstrap.min.css",
-        "lib/css/bootstrap.min.css.map",
-        "lib/css/bootstrap-table.min.css"
+        "lib/css/bootstrap.min.css.map"
       ],
       "matches": [ "https://*.ieweb.wsu.ac.za/*" ]
     }
@@ -64,9 +63,7 @@
       ],
       "js": [
         "lib/js/jquery.min.js",
-        "content/content.js",
-        "lib/js/bootstrap.bundle.min.js",
-        "lib/js/bootstrap-table.min.js"
+        "content/content.js"
       ]
     },
     {

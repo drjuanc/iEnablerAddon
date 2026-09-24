@@ -328,12 +328,11 @@
 
     //Content frame: Bootstrap, form and button classes, the notice box and the subjects table
     function themeF3() {
-        ['lib/css/bootstrap.min.css', 'lib/css/bootstrap-table.min.css'].forEach(function (file) {
-            let link = document.createElement('link');
-            link.rel = 'stylesheet';
-            link.href = chrome.runtime.getURL(file);
-            addNode('theme', link, document.head);
-        });
+        //Bootstrap, for the form and button classes below
+        let link = document.createElement('link');
+        link.rel = 'stylesheet';
+        link.href = chrome.runtime.getURL('lib/css/bootstrap.min.css');
+        addNode('theme', link, document.head);
 
         //Academic year, exam year, exam month and exam type
         ['x_cyr', 'x_exmcyr', 'x_exm1', 'x_et'].forEach(name => addClasses('theme', document.getElementsByName(name)[0], ['form-select']));
@@ -372,16 +371,17 @@
         S1: 'S1 - Supplementary exam'
     };
 
-    //Subjects table (the first .rltable): a real header, mark type tooltips, and Bootstrap Table
-    //for searching. Reverting puts back a copy of the table taken before any change
+    //Subjects table (the first .rltable): a real header, tooltips, and a search box that filters
+    //the rows. The rows stay the portal's own elements, so the subject links (do_menu) work as
+    //before. Reverting puts back a copy of the table taken before any change
     function subjectsTable() {
         let table = document.querySelector('table.rltable');
         let fakeHeader = table ? table.querySelector('tr.rlheader') : null;
-        if (!fakeHeader || !$.fn.bootstrapTable) return;
+        if (!fakeHeader) return;
 
         let original = table.cloneNode(true);
 
-        //The portal's header is an ordinary row: make it a <thead> so Bootstrap Table finds the columns
+        //The portal's header is an ordinary row: make it a real <thead>
         let thead = document.createElement('thead');
         let headerRow = thead.appendChild(document.createElement('tr'));
         Array.from(fakeHeader.cells).forEach(function (cell) {
@@ -391,8 +391,6 @@
         fakeHeader.remove();
 
         table.id = 'tbSubjects';
-        table.setAttribute('data-search', 'true');
-        table.classList.add('table', 'table-striped');
 
         //Columns 2, 5 and 6 hold mark type codes
         table.querySelectorAll('tbody td:nth-child(2), tbody td:nth-child(5), tbody td:nth-child(6)').forEach(function (cell) {
@@ -402,21 +400,97 @@
             cell.setAttribute('title', Object.prototype.hasOwnProperty.call(MARK_TYPES, code) ? MARK_TYPES[code] : 'Unknown Mark Type');
         });
 
-        let $table = $(table);
-        $table.bootstrapTable({});
-        //Remove the extra classes Bootstrap Table adds by default
-        table.classList.remove('table-striped', 'table-bordered');
-        //Search box on the left
-        $table.closest('.bootstrap-table').find('.float-right').last().removeClass('float-right');
-
-        undo.theme.push(function () {
-            try {
-                $table.bootstrapTable('destroy');
-            } catch (e) {
-                //The copy below replaces whatever is left
+        //What the search looks in for each row: the cell text, the tooltips and the subject name
+        let rows = Array.from(table.tBodies).flatMap(tbody => Array.from(tbody.rows));
+        let searchText = new Map();
+        rows.forEach(function (row) {
+            let words = [];
+            Array.from(row.cells).forEach(function (cell) {
+                words.push(cell.textContent);
+                if (cell.title) words.push(cell.title);
+            });
+            let link = row.querySelector('a[onclick*="do_menu"]');
+            let name = link ? subjectName(link.getAttribute('onclick')) : null;
+            if (name) {
+                if (!link.title) link.title = name;
+                words.push(name);
             }
-            (table.closest('.bootstrap-table') || table).replaceWith(original);
+            searchText.set(row, words.join(' ').replace(/\s+/g, ' ').toLowerCase());
         });
+
+        //Search box and result count, just above the table
+        let tools = document.createElement('div');
+        tools.className = 'ienablerTableTools';
+        let label = tools.appendChild(document.createElement('label'));
+        label.htmlFor = 'ienablerSearch';
+        label.textContent = 'Search subjects';
+        let search = tools.appendChild(document.createElement('input'));
+        search.type = 'search';
+        search.id = 'ienablerSearch';
+        search.autocomplete = 'off';
+        search.setAttribute('aria-controls', 'tbSubjects');
+        //role="status" is read out politely by screen readers when its text changes
+        let count = tools.appendChild(document.createElement('p'));
+        count.className = 'ienablerCount';
+        count.setAttribute('role', 'status');
+
+        function countText(shown) {
+            let total = rows.length;
+            if (!search.value.trim()) return total + (total == 1 ? ' subject' : ' subjects');
+            if (!shown) return 'No subjects match';
+            return shown + ' of ' + total + (total == 1 ? ' subject' : ' subjects');
+        }
+
+        //Rows filter as you type; the count waits for a pause, so screen readers hear it once
+        let countTimer = null;
+        search.addEventListener('input', function () {
+            let query = search.value.trim().replace(/\s+/g, ' ').toLowerCase();
+            let shown = 0;
+            rows.forEach(function (row) {
+                row.hidden = !searchText.get(row).includes(query);
+                if (!row.hidden) shown++;
+            });
+            clearTimeout(countTimer);
+            countTimer = setTimeout(() => count.textContent = countText(shown), 300);
+        });
+        count.textContent = countText(rows.length);
+
+        table.before(tools);
+        undo.theme.push(function () {
+            clearTimeout(countTimer);
+            tools.remove();
+            table.replaceWith(original);
+        });
+    }
+
+    //Subject name: the 13th argument of the row's do_menu('2026','AEM37W0',...) call. The onclick
+    //text is only read, never run. Every argument must be a quoted string, otherwise the row gets
+    //no name (null) rather than a wrong one
+    function subjectName(onclick) {
+        let start = onclick ? onclick.indexOf('do_menu(') : -1;
+        if (start < 0) return null;
+        let text = onclick.slice(start + 'do_menu('.length);
+        let args = [];
+        let i = 0;
+        while (true) {
+            while (text[i] == ' ') i++;
+            if (text[i] != "'") return null;
+            let value = '';
+            i++;
+            while (i < text.length && text[i] != "'") {
+                if (text[i] == '\\') i++; //Escaped character, such as \'
+                value += text[i++] || '';
+            }
+            if (i >= text.length) return null; //No closing quote
+            args.push(value);
+            i++;
+            while (text[i] == ' ') i++;
+            if (text[i] == ')') break;
+            if (text[i] != ',') return null;
+            i++;
+        }
+        let name = args.length >= 13 ? args[12].trim() : '';
+        return name || null;
     }
 
     /*== Improve accessibility (WCAG 2.2 AA) ==*/
