@@ -1,6 +1,6 @@
 /*Defining colours and fonts in variables*/
 /*Injected into every iEnabler page as a content-script stylesheet (see manifest.json)
-and @imported by framef1.css, framef3.css and popup.css.
+and @imported by popup.css (which uses only the --pop* roles at the end).
 No other stylesheet should hard-code a colour: add a variable here instead.*/
 :root {
     /*== WSU palette ==*/
@@ -52,8 +52,6 @@ No other stylesheet should hard-code a colour: add a variable here instead.*/
     --txtBody: var(--neutral-900);
     --txtMuted: var(--neutral-600);
     --footerBg: rgb(234 234 234 / 51%);             /*--neutral-200 at 51%*/
-    --popupHighlight: rgb(200 128 40 / 26%);        /*--wsu-ochre at 26%*/
-    --popupHighlight50: rgb(200 128 40 / 10%);      /*--wsu-ochre at 10%*/
 
     /*Neutral look of the content frame (F3) when the WSU colours are off: the font, focus and link
     hover it had with Bootstrap 5.0.2. Not WSU colours, so only used by the neutral rules in framef3.css*/
@@ -62,21 +60,95 @@ No other stylesheet should hard-code a colour: add a variable here instead.*/
     --neutral-focus-shadow: rgb(13 110 253 / 25%);
     --neutral-link-hover: #0A58CA;
 
-    /*Bootstrap draws some control icons as SVG images, which cannot read a variable, so the colour is in the SVG*/
-    /*Switch knob when off: --neutral-500 (%23767676)*/
-    --switchKnobOff: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='-4 -4 8 8'%3e%3ccircle r='3' fill='%23767676'/%3e%3c/svg%3e");
-    /*Switch knob when on: --neutral-white (%23FFFFFF)*/
-    --switchKnobOn: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='-4 -4 8 8'%3e%3ccircle r='3' fill='%23FFFFFF'/%3e%3c/svg%3e");
+    /*Control icons drawn as SVG images cannot read a variable, so the colour is in the SVG*/
     /*Drop-down chevron (F3 selects): --neutral-900 (%23212529)*/
     --selectChevron: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3e%3cpath fill='none' stroke='%23212529' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M2 5l6 6 6-6'/%3e%3c/svg%3e");
-    /*Open accordion chevron: --wsu-maroon (%23501010)*/
-    --accordionIconOpen: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' fill='%23501010'%3e%3cpath fill-rule='evenodd' d='M1.646 4.646a.5.5 0 0 1 .708 0L8 10.293l5.646-5.647a.5.5 0 0 1 .708.708l-6 6a.5.5 0 0 1-.708 0l-6-6a.5.5 0 0 1 0-.708z'/%3e%3c/svg%3e");
-
     /*Logo on dark backgrounds (main menu sidebar).
     There is no official reversed logo yet, so the full-colour logo is turned white with a filter.
     When an official light logo arrives: set WSU_LOGO_ON_DARK in content/content.js to the new file
     and change this to 'none'.*/
     --logoOnDarkFilter: brightness(0) invert(1);
+
+    /*== Popup dark palette (popup only) ==*/
+    /*Derived from the WSU palette: maroon hue for the backgrounds, ochre and cream for text and
+    accents. Maroon itself is never text on these backgrounds (1.2:1). Ratios on --dark-bg / --dark-surface*/
+    --dark-bg: #1C1414;          /*Very dark maroon*/
+    --dark-surface: #261B1B;     /*Cards*/
+    --dark-open: #3A2020;        /*Open section header*/
+    --dark-border: #4A3A38;      /*Card dividers, decoration only*/
+    --dark-text: #F2EAE3;        /*Cream, a little darker: 15.2:1 / 14.1:1*/
+    --dark-muted: #B9ACA3;       /*Warm grey: 8.2:1 / 7.6:1*/
+    --dark-accent: #E3A857;      /*Lighter ochre: 8.6:1 / 8.0:1, also on --dark-open 7.1:1*/
+    --dark-heading: #EBB1A8;     /*Light maroon-rose: 9.8:1 / 9.1:1*/
+    --dark-link-hover: #F8E9D6;  /*--wsu-ochre-tint: 15.2:1*/
+    --dark-control: #9C8F87;     /*Switch off, track border and knob: 5.3:1 on --dark-surface*/
+}
+
+/*== Popup theme (popup/popup.html) ==*/
+/*The popup sets data-popup-theme on <html> to auto, light or dark (popup/theme.js). The iEnabler
+pages never set it, so none of this reaches them. popup.css uses only these --pop* roles*/
+:root[data-popup-theme] {
+    color-scheme: light;
+    --popBg: var(--neutral-white);
+    --popSurface: var(--neutral-white);
+    --popOpenBg: var(--wsu-cream);          /*Maroon text on it: 13.0:1*/
+    --popBorder: var(--neutral-300);        /*Decoration only*/
+    --popText: var(--neutral-900);
+    --popMuted: var(--neutral-600);         /*7.8:1*/
+    --popAccent: var(--wsu-maroon);         /*Active tab, links, section titles: 14.8:1*/
+    --popHeading: var(--wsu-maroon);
+    --popLinkHover: var(--wsu-red);         /*7.7:1*/
+    --popSwitchOff: var(--neutral-500);     /*4.5:1*/
+    --popSwitchOn: var(--wsu-maroon);
+    --popSwitchKnobOn: var(--neutral-white);
+    --popRule: var(--wsu-ochre);
+    /*Focus: ochre outside, maroon inside. Ochre alone is 2.8:1 on cream, together one always passes 3:1*/
+    --popFocusOuter: var(--wsu-ochre);
+    --popFocusInner: var(--wsu-maroon);
+    --popLogoFilter: none;
+}
+
+/*Dark: chosen in the popup, or Automatic on a device set to dark*/
+:root[data-popup-theme="dark"] {
+    color-scheme: dark;
+    --popBg: var(--dark-bg);
+    --popSurface: var(--dark-surface);
+    --popOpenBg: var(--dark-open);
+    --popBorder: var(--dark-border);
+    --popText: var(--dark-text);
+    --popMuted: var(--dark-muted);
+    --popAccent: var(--dark-accent);
+    --popHeading: var(--dark-heading);
+    --popLinkHover: var(--dark-link-hover);
+    --popSwitchOff: var(--dark-control);
+    --popSwitchOn: var(--dark-accent);
+    --popSwitchKnobOn: var(--dark-bg);
+    --popRule: var(--dark-accent);
+    --popFocusOuter: var(--dark-accent);
+    --popFocusInner: var(--dark-bg);
+    --popLogoFilter: var(--logoOnDarkFilter);
+}
+
+@media (prefers-color-scheme: dark) {
+    :root[data-popup-theme="auto"] {
+        color-scheme: dark;
+        --popBg: var(--dark-bg);
+        --popSurface: var(--dark-surface);
+        --popOpenBg: var(--dark-open);
+        --popBorder: var(--dark-border);
+        --popText: var(--dark-text);
+        --popMuted: var(--dark-muted);
+        --popAccent: var(--dark-accent);
+        --popHeading: var(--dark-heading);
+        --popLinkHover: var(--dark-link-hover);
+        --popSwitchOff: var(--dark-control);
+        --popSwitchOn: var(--dark-accent);
+        --popSwitchKnobOn: var(--dark-bg);
+        --popRule: var(--dark-accent);
+        --popFocusOuter: var(--dark-accent);
+        --popFocusInner: var(--dark-bg);
+        --popLogoFilter: var(--logoOnDarkFilter);
+    }
 }
 
 /*Fonts: the chrome-extension URL works when this file is injected as a content-script stylesheet,

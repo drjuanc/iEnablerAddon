@@ -1,362 +1,251 @@
+/*Popup: the Settings and About tabs.
+The settings are the config array from config.js, kept in chrome.storage.sync and read by index.
+Saving is debounced (see storeConfig); the iEnabler pages after login update themselves when the
+config changes (content/content.js), the login page is updated live through background.js*/
+
+var arrConfig; //The settings, read when the popup opens
+//Appearance options that only apply with the modern look: disabled while it is off
+var APPEARANCE_OPTIONS = ['customColors', 'wcga', 'colourSchemeGroup'];
+var currentURL = ''; //Address of the active tab, to update the login page live
+
+function byId(id) {
+    return document.getElementById(id);
+}
+
+/*========= Settings tab ==========*/
 chrome.tabs.query({ active: true, currentWindow: true }, function (tabs) {
-
-    // since only one tab should be active and in the current window at once
-    // the return variable should only have one entry
-    let activeTab = tabs[0];
-    let currentURL = activeTab.url; 
-    let arrConfig;  
-
-    /*The reason all is wrapped in because tabs.query is asyncronic request, to ensure trigger anything after getting the 
-     data from the tab */
-
-    $(document).ready(function () {   
-            
-        //Read the config and store it in the array
-        chrome.storage.sync.get(function (result) {
-            if (chrome.runtime.lastError) {
-                console.warn('iEnablerAddon: could not read the settings: ' + chrome.runtime.lastError.message);
-                result = {};
-            }
-            //Missing or incomplete settings show the defaults (see config.js). Nothing is saved
-            //until the user changes something
-            savedConfig = JSON.stringify(result.config);
-            arrConfig = mergeConfig(result.config);
-
-            //Depending on the config update the controls
-            // "Custom Theme" switch
-            if (arrConfig[0][0] == 'customTheme') {
-                var arrItems = [$('#customTheme')];
-                var arrSubItems = [$('#customColors'), $('#wcga'), $('#customColorsH6'), $('#wcgaH6')]
-                changeItemStatus(arrSubItems, arrConfig[0][1]);
-                changeSwitchState(arrItems, arrConfig[0][1]);
-            }
-
-            // "Custom colours" and "Improve accessibility" switches, on only while the custom theme is on
-            if (arrConfig[1][0] == 'customColors') {
-                changeSwitchState([$('#customColors')], arrConfig[0][1] && arrConfig[1][1]);
-            }
-            if (arrConfig[2][0] == 'wgca') {
-                changeSwitchState([$('#wcga')], arrConfig[0][1] && arrConfig[2][1]);
-            }
-
-
-            // "Custom Login" switch
-            if (arrConfig[3][0] == 'customLogin') {
-                var arrItems = [ //To uncheck
-                    $('#customLogin'), $('#fixLogo'),
-                    $('#customLoginColors'), $('#userTypeDef'),
-                    $('#cleanLogin')
-                ]; 
-                var arrSubItems = [ //to deactivate
-                    $('#customLoginColors'), $('#customLoginColorsH6'),
-                    $('#fixLogo'), $('#fixLogoH6'),
-                    $('#userTypeGroup'), $('#userTypeDef'),
-                    $('#cleanLogin'), $('#cleanLoginH6')
-                ]
-
-                changeItemStatus(arrSubItems, arrConfig[3][1]);
-                changeSwitchState(arrItems, arrConfig[3][1]);
-            }
-
-            // "Custom Login colors" switch
-            if (arrConfig[4][0] == 'customLoginColors') {
-                var arrItems = [$('#customLoginColors')]; //To uncheck
-
-                //If the custom login is on 
-                if (arrConfig[3][1] && arrConfig[4][1]) {
-                    changeSwitchState(arrItems, true);
-                } else {
-                    changeSwitchState(arrItems, false);
-                }
-                    
-            }
-
-            // "Fix WSU logo" switch
-            if (arrConfig[5][0] == 'fixWSULogo') {
-                var arrItems = [$('#fixLogo')]; //To uncheck
-
-                //If the custom login is on 
-                if (arrConfig[3][1] && arrConfig[5][1]) {
-                    changeSwitchState(arrItems, true);
-                } else {
-                    changeSwitchState(arrItems, false);
-                }
-            }
-
-            // "I log in as" radios
-            if (arrConfig[9] && arrConfig[9][0] == 'userType') {
-                $('#userType' + arrConfig[9][1]).prop('checked', true);
-            }
-
-            // "Select this option by default" switch
-            if (arrConfig[6][0] == 'userTypeDef') {
-                var arrItems = [$('#userTypeDef')]; //To uncheck
-
-                //If the custom login is on 
-                if (arrConfig[3][1] && arrConfig[6][1]) {
-                    changeSwitchState(arrItems, true);
-                } else {
-                    changeSwitchState(arrItems, false);
-                }
-            }
-
-            // "Clean Login" switch
-            if (arrConfig[7][0] == 'cleanLogin') {
-                var arrItems = [$('#cleanLogin')]; //To uncheck
-
-                //If the custom login is on 
-                if (arrConfig[3][1] && arrConfig[7][1]) {
-                    changeSwitchState(arrItems, true);
-                } else {
-                    changeSwitchState(arrItems, false);
-                }
-            }
-        });
-
-    
-        //Click on the active theme switch
-        $('#customTheme').change(function (event) {
-
-            var state = $(this).prop('checked');
-
-            //If the first config is the 'customTheme'
-            if (arrConfig[0][0] == 'customTheme') {
-                //Update the config option and save the configuration options in the user profile
-                arrConfig[0][1] = state;  
-                storeConfig(arrConfig);
-
-                //Activate the theme sub-options. They keep their own settings.
-                //The iEnabler pages update themselves when the config changes (see content/content.js)
-                var items = [$("#customColors"), $("#wcga"), $("#customColorsH6"), $("#wcgaH6")];
-                changeItemStatus(items, state);
-                changeSwitchState([$('#customColors')], state && arrConfig[1][1]);
-                changeSwitchState([$('#wcga')], state && arrConfig[2][1]);
-
-            } else {
-                //Otherwise trigger an error
-                console.log("Error in the configuration option: " + arrConfig[0][0]);
-                configCorruption();
-            }
-
-        event.preventDefault();
-
-
-        });
-
-        //Click on the custom colours switch
-        $('#customColors').change(function (event) {
-
-            var state = $(this).prop('checked');
-
-            if (arrConfig[1][0] == 'customColors') {
-                //Save it, the iEnabler pages update themselves (see content/content.js)
-                arrConfig[1][1] = state;
-                storeConfig(arrConfig);
-            } else {
-                //Otherwise trigger an error
-                console.log("Error in the configuration option: " + arrConfig[1][0]);
-                configCorruption();
-            }
-            event.preventDefault();
-        });
-
-        //Click on the accessibility switch
-        $('#wcga').change(function (event) {
-
-            var state = $(this).prop('checked');
-
-            if (arrConfig[2][0] == 'wgca') {
-                //Save it, the iEnabler pages update themselves (see content/content.js)
-                arrConfig[2][1] = state;
-                storeConfig(arrConfig);
-            } else {
-                //Otherwise trigger an error
-                console.log("Error in the configuration option: " + arrConfig[2][0]);
-                configCorruption();
-            }
-            event.preventDefault();
-        });
-
-        /*======Click on the Custom login page====*/
-        $('#customLogin').change(function (event) {
-
-            var state = $(this).prop('checked');
-
-            //If the first config is the 'custom Login Theme'
-            if (arrConfig[3][0] == 'customLogin') {
-                //Update the config option and save the configuration options in the user profile
-                arrConfig[3][1] = arrConfig[4][1] = arrConfig[5][1] = state;
-                storeConfig(arrConfig);
-
-                //Activate the theme sub-options.
-                //var items = [$('#customLoginColors'), $('#fixLogo'), $('#customLoginColorsH6'), $('#fixLogoH6')];
-                var items = [ //to deactivate
-                    $('#customLoginColors'), $('#customLoginColorsH6'),
-                    $('#fixLogo'), $('#fixLogoH6'),
-                    $('#userTypeGroup'), $('#userTypeDef'),
-                    $('#cleanLogin'), $('#cleanLoginH6')
-                ]
-                var checkItems = [ //to check
-                    $('#customLoginColors'),
-                    $('#fixLogo')
-                ]
-                //var chechItems = [$("#customColors"), $("#wcga")];
-                changeItemStatus(items, state);
-                changeSwitchState(checkItems, state);
-                //The user type default keeps its own setting
-                changeSwitchState([$('#userTypeDef')], state && arrConfig[6][1]);
-
-                //Update the login page
-                if (currentURL.includes('mi_login')) {
-
-                    chrome.runtime.sendMessage({ action: "customLogin", param: state  }, messageSent);                
-                  
-                }
-
-            } else {
-                //Otherwise trigger an error
-                console.log("Error in the configuration option: " + arrConfig[3][0]);
-                configCorruption();
-                changeItemStatus(items, false);
-                changeSwitchState(items, false);
-            }
-
-            event.preventDefault();
-        });
-
-        //Click on the Custom colors of the login page
-        $('#customLoginColors').change(function (event) {
-
-            var state = $(this).prop('checked');
-            //If the first config is the 'custom Login colors'
-            if (arrConfig[4][0] == 'customLoginColors') {
-                //Update the config option and save the configuration options in the user profile
-                arrConfig[4][1] = state;
-                storeConfig(arrConfig);
-
-                //Update the login page
-                if (currentURL.includes('mi_login')) {
-
-                    chrome.runtime.sendMessage({ action: "customLoginColors", param: state }, messageSent);
-
-                }
-
-            } else {
-                //Otherwise trigger an error
-                console.log("Error in the configuration option: " + arrConfig[4][0]);
-                configCorruption();
-            }
-            event.preventDefault();
-        });
-
-        //Click on Fix WSU LOGO
-        $('#fixLogo').change(function (event) {
-
-            var state = $(this).prop('checked'); //Selected or not
-
-            if (arrConfig[5][0] == 'fixWSULogo') {
-                //Update the config option and save the configuration options in the user profile
-                arrConfig[5][1] = state;
-                storeConfig(arrConfig);
-
-                //Update the login page
-                if (currentURL.includes('mi_login')) {
-
-                    chrome.runtime.sendMessage({ action: "fixWSULogo", param: state }, messageSent);
-
-                }
-
-            } else {
-                //Otherwise trigger an error
-                console.log("Error in the configuration option: " + arrConfig[5][0]);
-                configCorruption();
-            }
-        });
-
-        //Click on "Select this option by default on the login page"
-        $('#userTypeDef').change(function (event) {
-
-            var state = $(this).prop('checked'); //Selected or not
-
-            if (arrConfig[6][0] == 'userTypeDef') {
-                //Update the config option and save the configuration options in the user profile
-                arrConfig[6][1] = state;
-                storeConfig(arrConfig);
-
-                //Update the login page
-                if (currentURL.includes('mi_login')) {
-
-                    chrome.runtime.sendMessage({ action: "userTypeDef", param: state, type: $('input[name="userType"]:checked').val() }, messageSent);
-
-                }
-
-            } else {
-                //Otherwise trigger an error
-                console.log("Error in the configuration option: " + arrConfig[6][0]);
-                configCorruption();
-            }
-
-        });
-
-        //Click on "I log in as"
-        $('input[name="userType"]').change(function (event) {
-
-            var type = $(this).val(); //S, P, A or O
-
-            if (arrConfig[9] && arrConfig[9][0] == 'userType') {
-                //Update the config option and save the configuration options in the user profile
-                arrConfig[9][1] = type;
-                storeConfig(arrConfig);
-
-                //Update the login page, only if this type is selected by default
-                if (arrConfig[6][1] && currentURL.includes('mi_login')) {
-
-                    chrome.runtime.sendMessage({ action: "userType", param: type }, messageSent);
-
-                }
-
-            } else {
-                //Otherwise trigger an error
-                console.log("Error in the configuration option: userType");
-                configCorruption();
-            }
-
-        });
-
-        //Click on Clean login
-        $('#cleanLogin').change(function (event) {
-
-            var state = $(this).prop('checked'); //Selected or not
-
-            if (arrConfig[7][0] == 'cleanLogin') {
-                //Update the config option and save the configuration options in the user profile
-                arrConfig[7][1] = state;
-                storeConfig(arrConfig);
-
-                //Update the login page
-                if (currentURL.includes('mi_login')) {
-
-                    chrome.runtime.sendMessage({ action: "cleanLogin", param: state }, messageSent);
-
-                }
-
-            } else {
-                //Otherwise trigger an error
-                console.log("Error in the configuration option: " + arrConfig[7][0]);
-                configCorruption();
-            }
-        });
-
-    })//End Document.ready
-
-}); //End Tab.query
-
-/*=========Home and Contact tabs==========*/
-$(document).ready(function () {
+    //Only the iEnabler pages give their address (host permission)
+    currentURL = (tabs && tabs[0] && tabs[0].url) || '';
+});
+
+//Read the config and update the controls
+chrome.storage.sync.get(function (result) {
+    if (chrome.runtime.lastError) {
+        console.warn('iEnablerAddon: could not read the settings: ' + chrome.runtime.lastError.message);
+        result = {};
+    }
+    //Missing or incomplete settings show the defaults (see config.js). Nothing is saved
+    //until the user changes something
+    savedConfig = JSON.stringify(result.config);
+    arrConfig = mergeConfig(result.config);
+
+    // "Modern look" switch, and its sub-options: on only while it is on, keeping their own settings
+    if (arrConfig[0][0] == 'customTheme') {
+        setDisabled(APPEARANCE_OPTIONS, !arrConfig[0][1]);
+        setChecked('customTheme', arrConfig[0][1]);
+    }
+    if (arrConfig[1][0] == 'customColors') setChecked('customColors', arrConfig[0][1] && arrConfig[1][1]);
+    if (arrConfig[2][0] == 'wgca') setChecked('wcga', arrConfig[0][1] && arrConfig[2][1]);
+
+    // "Improved login page" switch
+    if (arrConfig[3][0] == 'customLogin') {
+        setDisabled(['customLoginColors', 'fixLogo', 'userTypeGroup', 'userTypeDef', 'cleanLogin'], !arrConfig[3][1]);
+        setChecked('customLogin', arrConfig[3][1]);
+    }
+
+    //Login sub-options, on only while the improved login page is on
+    if (arrConfig[4][0] == 'customLoginColors') setChecked('customLoginColors', arrConfig[3][1] && arrConfig[4][1]);
+    if (arrConfig[5][0] == 'fixWSULogo') setChecked('fixLogo', arrConfig[3][1] && arrConfig[5][1]);
+
+    // "I log in as" radios
+    if (arrConfig[9] && arrConfig[9][0] == 'userType') {
+        var userType = byId('userType' + arrConfig[9][1]);
+        if (userType) userType.checked = true;
+    }
+
+    if (arrConfig[6][0] == 'userTypeDef') setChecked('userTypeDef', arrConfig[3][1] && arrConfig[6][1]);
+    if (arrConfig[7][0] == 'cleanLogin') setChecked('cleanLogin', arrConfig[3][1] && arrConfig[7][1]);
+
+    // "Colour scheme": the synced setting wins over the copy theme.js used. This window follows it
+    //even while the modern look is off; the iEnabler pages only with the modern look (content.js)
+    if (arrConfig[10] && arrConfig[10][0] == 'colourScheme') {
+        var scheme = byId({ auto: 'colourSchemeAuto', light: 'colourSchemeLight', dark: 'colourSchemeDark' }[arrConfig[10][1]] || 'colourSchemeAuto');
+        scheme.checked = true;
+        applyPopupTheme(scheme.value);
+    }
+});
+
+//Run the handler when the switch changes, once the settings have been read
+function onChange(id, handler) {
+    byId(id).addEventListener('change', function (event) {
+        if (!arrConfig) return;
+        handler(event.target.checked, event);
+    });
+}
+
+//Check the config entry is where it should be before changing it
+function configEntryIs(index, key) {
+    if (arrConfig[index] && arrConfig[index][0] == key) return true;
+    console.log('Error in the configuration option: ' + (arrConfig[index] ? arrConfig[index][0] : key));
+    configCorruption();
+    return false;
+}
+
+//Update the login page live, only when it is the active tab
+function updateLoginPage(message) {
+    if (currentURL.includes('mi_login')) chrome.runtime.sendMessage(message, messageSent);
+}
+
+// "Use the modern look"
+onChange('customTheme', function (state) {
+    if (!configEntryIs(0, 'customTheme')) return;
+    arrConfig[0][1] = state;
+    storeConfig(arrConfig);
+
+    //Activate the sub-options. They keep their own settings.
+    //The iEnabler pages update themselves when the config changes (see content/content.js)
+    setDisabled(APPEARANCE_OPTIONS, !state);
+    setChecked('customColors', state && arrConfig[1][1]);
+    setChecked('wcga', state && arrConfig[2][1]);
+});
+
+// "WSU colours" (iEnabler pages)
+onChange('customColors', function (state) {
+    if (!configEntryIs(1, 'customColors')) return;
+    arrConfig[1][1] = state;
+    storeConfig(arrConfig);
+});
+
+// "Accessibility enhancements"
+onChange('wcga', function (state) {
+    if (!configEntryIs(2, 'wgca')) return;
+    arrConfig[2][1] = state;
+    storeConfig(arrConfig);
+});
+
+// "Use the improved login page": also turns the WSU colours and the new logo on or off
+onChange('customLogin', function (state) {
+    if (!configEntryIs(3, 'customLogin')) return;
+    arrConfig[3][1] = arrConfig[4][1] = arrConfig[5][1] = state;
+    storeConfig(arrConfig);
+
+    setDisabled(['customLoginColors', 'fixLogo', 'userTypeGroup', 'userTypeDef', 'cleanLogin'], !state);
+    setChecked('customLoginColors', state);
+    setChecked('fixLogo', state);
+    //The user type default keeps its own setting
+    setChecked('userTypeDef', state && arrConfig[6][1]);
+
+    updateLoginPage({ action: 'customLogin', param: state });
+});
+
+// "WSU colours" (login page)
+onChange('customLoginColors', function (state) {
+    if (!configEntryIs(4, 'customLoginColors')) return;
+    arrConfig[4][1] = state;
+    storeConfig(arrConfig);
+    updateLoginPage({ action: 'customLoginColors', param: state });
+});
+
+// "New WSU logo"
+onChange('fixLogo', function (state) {
+    if (!configEntryIs(5, 'fixWSULogo')) return;
+    arrConfig[5][1] = state;
+    storeConfig(arrConfig);
+    updateLoginPage({ action: 'fixWSULogo', param: state });
+});
+
+// "Pre-select my choice on the login page"
+onChange('userTypeDef', function (state) {
+    if (!configEntryIs(6, 'userTypeDef')) return;
+    arrConfig[6][1] = state;
+    storeConfig(arrConfig);
+    var checked = document.querySelector('input[name="userType"]:checked');
+    updateLoginPage({ action: 'userTypeDef', param: state, type: checked ? checked.value : undefined });
+});
+
+// "I log in as"
+document.querySelectorAll('input[name="userType"]').forEach(function (radio) {
+    radio.addEventListener('change', function () {
+        if (!arrConfig) return;
+        var type = radio.value; //S, P, A or O
+        if (!(arrConfig[9] && arrConfig[9][0] == 'userType')) {
+            console.log('Error in the configuration option: userType');
+            configCorruption();
+            return;
+        }
+        arrConfig[9][1] = type;
+        storeConfig(arrConfig);
+        //Update the login page, only if this type is selected by default
+        if (arrConfig[6][1]) updateLoginPage({ action: 'userType', param: type });
+    });
+});
+
+// "Hide the Prospective Students box"
+onChange('cleanLogin', function (state) {
+    if (!configEntryIs(7, 'cleanLogin')) return;
+    arrConfig[7][1] = state;
+    storeConfig(arrConfig);
+    updateLoginPage({ action: 'cleanLogin', param: state });
+});
+
+// "Colour scheme": this window changes at once, the iEnabler pages when the setting is saved
+document.querySelectorAll('input[name="colourScheme"]').forEach(function (radio) {
+    radio.addEventListener('change', function () {
+        applyPopupTheme(radio.value);
+        if (!arrConfig || !configEntryIs(10, 'colourScheme')) return;
+        arrConfig[10][1] = radio.value;
+        storeConfig(arrConfig);
+    });
+});
+
+//Set the theme and keep a copy for theme.js, which sets it before the next popup is drawn
+function applyPopupTheme(theme) {
+    document.documentElement.dataset.popupTheme = theme;
+    try {
+        localStorage.setItem('colourScheme', theme);
+    } catch (e) {
+        //Storage blocked: the next popup starts on Automatic until the settings are read
+    }
+}
+
+/*========= Tabs and sections ==========*/
+//Tabs (WAI-ARIA tabs pattern): click, or arrow keys, Home and End, which also select the tab
+var tabList = document.querySelector('[role="tablist"]');
+var tabs = Array.from(tabList.querySelectorAll('[role="tab"]'));
+
+function selectTab(tab) {
+    tabs.forEach(function (other) {
+        var selected = other === tab;
+        other.setAttribute('aria-selected', selected ? 'true' : 'false');
+        other.tabIndex = selected ? 0 : -1;
+        byId(other.getAttribute('aria-controls')).hidden = !selected;
+    });
+}
+
+tabs.forEach(function (tab) {
+    tab.addEventListener('click', function () {
+        selectTab(tab);
+    });
+});
+
+tabList.addEventListener('keydown', function (event) {
+    var index = tabs.indexOf(document.activeElement);
+    if (index < 0) return;
+    var next = { ArrowRight: index + 1, ArrowLeft: index - 1, Home: 0, End: tabs.length - 1 }[event.key];
+    if (next === undefined) return;
+    event.preventDefault();
+    var tab = tabs[(next + tabs.length) % tabs.length];
+    selectTab(tab);
+    tab.focus();
+});
+
+//Sections: each opens and closes on its own
+document.querySelectorAll('.sectionToggle').forEach(function (button) {
+    button.addEventListener('click', function () {
+        var open = button.getAttribute('aria-expanded') != 'true';
+        button.setAttribute('aria-expanded', open ? 'true' : 'false');
+        byId(button.getAttribute('aria-controls')).hidden = !open;
+    });
+});
+
+/*========= About tab ==========*/
+(function () {
     var version = chrome.runtime.getManifest().version;
 
-    //Version number next to the name and in the footer
-    $('.jsVersion').text('v' + version);
+    //Version number next to the name
+    document.querySelectorAll('.jsVersion').forEach(function (element) {
+        element.textContent = 'v' + version;
+    });
 
     //"Report a problem" email, with the version and a short template filled in
     var subject = 'iEnablerAddon v' + version + ' \u2013 problem report';
@@ -374,56 +263,30 @@ $(document).ready(function () {
         'iEnablerAddon v' + version,
         'Browser: ' + navigator.userAgent
     ].join('\n');
-    $('#lnkReport').attr('href', 'mailto:jgarcia-alonso@wsu.ac.za'
+    byId('lnkReport').href = 'mailto:jgarcia-alonso@wsu.ac.za'
         + '?subject=' + encodeURIComponent(subject)
-        + '&body=' + encodeURIComponent(body));
+        + '&body=' + encodeURIComponent(body);
 
     //Links do not open reliably from inside the popup, so open them in a new tab
-    $('.jsExternal').click(function (event) {
-        event.preventDefault();
-        chrome.tabs.create({ url: this.href });
+    document.querySelectorAll('.jsExternal').forEach(function (link) {
+        link.addEventListener('click', function (event) {
+            event.preventDefault();
+            chrome.tabs.create({ url: link.href });
+        });
     });
-});
+})();
 
 /*=========Services functions==========*/
-/*===All the reusable functions needded for the config page "Popup"===*/
-
-/*Enable or disable the switch and switch headings*/
-//var "items"" is an array of DOM objects, var 'state'' is true or false
-function changeItemStatus(items, state) {
-
-    for (var x in items) {        
-        var nodeType = (items[x].prop('nodeName'));
-        switch (nodeType) {
-
-            case 'INPUT':
-                items[x].attr('disabled', !state);
-                break;
-
-            case 'FIELDSET': //disables every radio inside
-                items[x].prop('disabled', !state);
-                items[x].css('opacity', state ? 1 : 0.6);
-                break;
-
-            default:
-                opacity = state ? 1 : 0.6;
-                items[x].css('opacity', opacity);
-
-        }
-    }
-
+/*Enable or disable switches and groups of radios. popup.css dims a disabled row or group*/
+function setDisabled(ids, disabled) {
+    ids.forEach(function (id) {
+        byId(id).disabled = disabled;
+    });
 }
 
-/*Change the status (check or uncheck) of the switch and switch headings*/
-//var "items"" is an array of DOM objects, var 'state'' is true or false
-function changeSwitchState(items, state) {
-    for (var x in items) {
-        var nodeType = (items[x].prop('nodeName'));
-        //Only for switchs;
-        if (nodeType == 'INPUT') {
-            items[x].prop('checked', state);
-        }
-    }
+/*Turn a switch on or off, without saving anything*/
+function setChecked(id, state) {
+    byId(id).checked = !!state;
 }
 
 /*Stores the config in the user chrome profile, this applies to all browser where the extension is active*/
@@ -477,4 +340,4 @@ function configCorruption(){
         priority: 2
     });
 
-}
+}

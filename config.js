@@ -12,7 +12,8 @@ const DEFAULT_CONFIG = [
     ['userTypeDef', false],       //[6] select the user type below by default on the login page
     ['cleanLogin', true],       //[7]
     ['otherConfg', false],       //[8]
-    ['userType', 'S']            //[9] S student, P personnel, A alumni, O other (values of the login radios)
+    ['userType', 'S'],           //[9] S student, P personnel, A alumni, O other (values of the login radios)
+    ['colourScheme', 'auto']     //[10] auto (follows the device), light or dark: the popup always, the iEnabler pages with the modern look
 
 ];
 
@@ -27,6 +28,13 @@ function mergeConfig(storedConfig) {
     if (personnelDef && !storedConfig.some(item => Array.isArray(item) && item[0] === 'userTypeDef')) {
         let wasOn = personnelDef[1] === true;
         storedConfig.push(['userTypeDef', wasOn], ['userType', wasOn ? 'P' : 'S']);
+    }
+
+    //During the popup rewrite the colour scheme was briefly called 'popupTheme'
+    let popupTheme = storedConfig.find(item => Array.isArray(item) && item[0] === 'popupTheme');
+    storedConfig = storedConfig.filter(item => !(Array.isArray(item) && item[0] === 'popupTheme'));
+    if (popupTheme && !storedConfig.some(item => Array.isArray(item) && item[0] === 'colourScheme')) {
+        storedConfig.push(['colourScheme', popupTheme[1]]);
     }
 
     let merged = DEFAULT_CONFIG.map(function ([key, value]) {

@@ -17,6 +17,9 @@
     //What is applied to this page, and how to undo it, see applySettings and revert below
     const applied = { theme: false, a11y: false };
     const undo = { theme: [], a11y: [] };
+    //The device's light or dark setting, for the "Automatic" colour scheme
+    const DARK_DEVICE = window.matchMedia('(prefers-color-scheme: dark)');
+    let lastConfig = null; //Settings last applied, to apply again when the device setting changes
 
     //Tooltips for the mark type codes in the subjects table
     const MARK_TYPES = {
@@ -54,7 +57,7 @@
         if (!Array.isArray(arrConfig)) return; //No settings stored yet
         /*==Now I read every individual configation and act accordingly==*/
         //Custom theme, custom colours and accessibility on the main menu page and its frames
-        if (FRAME) applySettings(themeSettings(arrConfig));
+        if (FRAME) applyConfig(arrConfig);
 
         //Custom login, if i'm in the login page
         if (currentURl.includes('mi_login')) {
@@ -237,11 +240,24 @@
         return { F1: 'f1', F3: 'f3' }[window.name] || null;
     }
 
-    //The three switches. Colours and accessibility only apply with the custom theme, as in the popup
+    //The Appearance settings. Colours, accessibility and the colour scheme only apply with the
+    //modern look (customTheme), as in the popup. 'dark' is the colour scheme worked out for this page:
+    //Dark, or Automatic on a device set to dark
     function themeSettings(config) {
-        let isOn = (index, key) => Array.isArray(config) && Array.isArray(config[index]) && config[index][0] == key && config[index][1] === true;
-        let theme = isOn(0, 'customTheme');
-        return { theme: theme, colours: theme && isOn(1, 'customColors'), a11y: theme && isOn(2, 'wgca') };
+        let entry = (index, key) => Array.isArray(config) && Array.isArray(config[index]) && config[index][0] == key ? config[index][1] : undefined;
+        let theme = entry(0, 'customTheme') === true;
+        let scheme = entry(10, 'colourScheme') || 'auto';
+        return {
+            theme: theme,
+            colours: theme && entry(1, 'customColors') === true,
+            a11y: theme && entry(2, 'wgca') === true,
+            dark: theme && (scheme == 'dark' || (scheme == 'auto' && DARK_DEVICE.matches))
+        };
+    }
+
+    function applyConfig(config) {
+        lastConfig = config;
+        applySettings(themeSettings(config));
     }
 
     function applySettings(settings) {
@@ -268,8 +284,9 @@
             applied.theme = settings.theme;
         }
 
-        //Colours are CSS only
+        //Colours and the dark colour scheme are CSS only
         root.classList.toggle('ie-colours', settings.colours);
+        root.classList.toggle('ie-dark', settings.dark);
 
         if (settings.a11y && !applied.a11y) {
             root.classList.add('ie-a11y');
@@ -281,8 +298,13 @@
     if (FRAME) {
         chrome.storage.onChanged.addListener(function (changes, areaName) {
             if (areaName == 'sync' && changes.config && Array.isArray(changes.config.newValue)) {
-                applySettings(themeSettings(changes.config.newValue));
+                applyConfig(changes.config.newValue);
             }
+        });
+
+        //Automatic colour scheme: follow the device when it switches between light and dark
+        DARK_DEVICE.addEventListener('change', function () {
+            if (lastConfig) applyConfig(lastConfig);
         });
     }
 

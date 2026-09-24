@@ -1,89 +1,299 @@
-@import "../content/css/variables.css"; /*WSU colours*/
+@import "../content/css/variables.css"; /*Colours: only the --pop* roles, light or dark*/
 
-/*==Applicable to the popup, where the extension config lies==*/
-
-.no-border{
-    border: 0 !important;
+/*==Popup: Settings and About tabs. No libraries, colours from the --pop* roles in variables.css==*/
+*, *::before, *::after {
+    box-sizing: border-box;
 }
-body{
+
+body {
     width: 360px;
     margin: 0;
-    color: var(--txtBody);
+    font-family: var(--fontSystem);
+    font-size: 0.9375rem;
+    line-height: 1.45;
+    color: var(--popText);
+    background-color: var(--popBg);
 }
 
-/*Same padding on every tab*/
 .popupWrap {
     padding: 12px 16px 16px 16px;
 }
 
-.tab-content {
-    padding-top: 16px;
+p {
+    margin: 0;
 }
 
-/*Utility classes for formatting*/
-/*Alignments*/
-.txtRight {
-    text-align: right !important;
+a {
+    color: var(--popAccent);
 }
 
-.txtLeft {
-    text-align: left !important;
+a:hover {
+    color: var(--popLinkHover);
 }
 
-/*Background colours*/
-.bgHigh{
-    background-color: var(--popupHighlight) !important;
-}
-.bgHigh50 {
-    background-color: var(--popupHighlight50) !important;
-}
-
-/*Text colours*/
-.ctGrey50 {
-    color: var(--txtMuted);
+/*Focus ring on every control, see --popFocusOuter in variables.css*/
+:focus-visible {
+    outline: 3px solid var(--popFocusOuter);
+    outline-offset: 2px;
+    box-shadow: 0 0 0 2px var(--popFocusInner);
 }
 
-/*text sizes*/
-.txtSmall {
-    font-size: 0.6em;
-}
-.txtMedG, h5 {
-    font-size: 1em !important;
+[hidden] {
+    display: none !important;
 }
 
-.txtMedP, h6 {
-    font-size: 0.8em !important;
+/*== Tabs ==*/
+.tabs {
+    display: flex;
+    gap: 4px;
+    margin-bottom: 12px;
+    border-bottom: 1px solid var(--popBorder);
 }
 
-
-/*Redefining the body card*/
-.card-body{
-    font-size:0.9em;  
+.tab {
+    padding: 8px 14px;
+    font: inherit;
+    color: var(--popMuted);
+    background: none;
+    border: 0;
+    border-bottom: 3px solid transparent;
+    margin-bottom: -1px;
+    cursor: pointer;
 }
 
-.padd05 {
-    padding: 0.2rem 0.6rem !important;
+.tab:hover {
+    color: var(--popAccent);
+    border-bottom-color: var(--popBorder);
 }
-/*images*/
-/*New WSU logo, keep its aspect ratio*/
+
+.tab[aria-selected="true"] {
+    color: var(--popAccent);
+    font-weight: 600;
+    border-bottom-color: var(--popAccent);
+}
+
+.panel:focus-visible {
+    outline-offset: 4px;
+}
+
+/*== Sections (Settings tab) ==*/
+.section {
+    border: 1px solid var(--popBorder);
+    border-radius: 8px;
+    overflow: hidden;
+}
+
+.section + .section {
+    margin-top: 8px;
+}
+
+.sectionHeading {
+    margin: 0;
+    font-size: 1rem;
+}
+
+.sectionToggle {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
+    padding: 10px 14px;
+    font: inherit;
+    font-weight: 600;
+    text-align: left;
+    color: var(--popText);
+    background-color: var(--popSurface);
+    border: 0;
+    cursor: pointer;
+}
+
+.sectionToggle[aria-expanded="true"] {
+    color: var(--popAccent);
+    background-color: var(--popOpenBg);
+    box-shadow: inset 0 -1px 0 var(--popBorder);
+}
+
+/*Chevron, pointing down when closed and up when open*/
+.sectionToggle::after {
+    content: "";
+    width: 8px;
+    height: 8px;
+    margin: 0 4px 4px 12px;
+    border-right: 2px solid currentColor;
+    border-bottom: 2px solid currentColor;
+    transform: rotate(45deg);
+    transition: transform .2s;
+}
+
+.sectionToggle[aria-expanded="true"]::after {
+    margin-bottom: -4px;
+    transform: rotate(225deg);
+}
+
+.sectionToggle:focus-visible {
+    outline-offset: -3px;
+}
+
+.sectionBody {
+    padding: 4px 12px 12px 12px;
+    background-color: var(--popBg);
+}
+
+.card {
+    padding: 10px 0;
+}
+
+.card + .card {
+    border-top: 1px solid var(--popBorder);
+}
+
+.cardTitle {
+    margin: 0 0 2px 0;
+    padding: 0;
+    font-size: 0.9375rem;
+    font-weight: 600;
+    color: var(--popText);
+}
+
+.hint {
+    font-size: 0.8125rem;
+    color: var(--popMuted);
+}
+
+fieldset {
+    margin: 0;
+    padding: 0;
+    border: 0;
+    min-width: 0;
+}
+
+/*== Switch rows: switch, label, and the description under the label ==*/
+.setting {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    column-gap: 10px;
+    align-items: center;
+}
+
+.setting + .setting, .hint + .setting, fieldset + .setting {
+    margin-top: 10px;
+}
+
+.setting label {
+    cursor: pointer;
+}
+
+.setting .hint {
+    grid-column: 2;
+    margin-top: 2px;
+}
+
+/*Real checkboxes drawn as switches; the knob is a background circle that moves across*/
+.switch {
+    appearance: none;
+    flex: none;
+    width: 36px;
+    height: 20px;
+    margin: 0;
+    border: 2px solid var(--popSwitchOff);
+    border-radius: 10px;
+    background-color: transparent;
+    background-image: radial-gradient(circle, var(--popSwitchOff) 5px, transparent 5.5px);
+    background-repeat: no-repeat;
+    background-size: 16px 16px;
+    background-position: left center;
+    cursor: pointer;
+    transition: background-position .15s, background-color .15s;
+}
+
+.switch:checked {
+    border-color: var(--popSwitchOn);
+    background-color: var(--popSwitchOn);
+    background-image: radial-gradient(circle, var(--popSwitchKnobOn) 5px, transparent 5.5px);
+    background-position: right center;
+}
+
+/*Sub-options while the main switch is off: disabled and dimmed, as before*/
+.setting:has(:disabled), fieldset:disabled {
+    opacity: 0.6;
+}
+
+.setting:has(:disabled) label, .switch:disabled, fieldset:disabled .radio, fieldset:disabled .segmented label {
+    cursor: default;
+}
+
+/*== "I log in as": 2 x 2 grid of radios ==*/
+.userTypeGrid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 4px 16px;
+    margin-top: 4px;
+}
+
+.radio {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    cursor: pointer;
+}
+
+.radio input {
+    margin: 0;
+    accent-color: var(--popAccent);
+}
+
+/*== Colour scheme: three radios drawn as a segmented control ==*/
+.segmented {
+    display: flex;
+    margin-top: 8px;
+    border: 1px solid var(--popSwitchOff);
+    border-radius: 6px;
+    overflow: hidden;
+}
+
+/*The radios stay focusable for the keyboard; their labels are the buttons*/
+.segmented input {
+    position: absolute;
+    opacity: 0;
+    width: 1px;
+    height: 1px;
+    margin: 0;
+}
+
+.segmented label {
+    flex: 1;
+    padding: 6px 4px;
+    text-align: center;
+    color: var(--popText);
+    cursor: pointer;
+}
+
+.segmented label + input + label {
+    border-left: 1px solid var(--popSwitchOff);
+}
+
+.segmented input:checked + label {
+    color: var(--popBg);
+    background-color: var(--popAccent);
+    font-weight: 600;
+}
+
+.segmented input:focus-visible + label {
+    outline: 3px solid var(--popFocusOuter);
+    outline-offset: -3px;
+    box-shadow: inset 0 0 0 5px var(--popFocusInner);
+}
+
+/*== About tab ==*/
+/*New WSU logo, keeping its aspect ratio; white in dark mode*/
 .wsuLogo {
     display: block;
     width: 180px;
     height: auto;
-    margin-bottom: 16px;
+    margin: 4px 0 16px 0;
+    filter: var(--popLogoFilter);
 }
 
-.card-header img {
-    float: left;
-    margin-right: 10px;
-}
-
-.form-check.form-switch {
-    text-align: left !important;
-}
-
-
-/*== Home and Contact tabs ==*/
 .appTitle {
     display: flex;
     align-items: baseline;
@@ -94,24 +304,23 @@ body{
     margin: 0;
     font-size: 1.4rem;
     font-weight: 700;
-    color: var(--primaryColor);
+    color: var(--popHeading);
 }
 
-.appVersion, .popupFooter {
+.appVersion {
     font-size: 0.85rem;
-    color: var(--txtMuted);
+    color: var(--popMuted);
 }
 
 .tagline {
-    margin: 4px 0 0 0;
-    color: var(--txtMuted);
+    margin-top: 4px;
+    color: var(--popMuted);
 }
 
 .ochreRule {
     margin: 16px 0;
     border: 0;
-    border-top: 2px solid var(--wsu-ochre);
-    opacity: 1;
+    border-top: 2px solid var(--popRule);
 }
 
 .author {
@@ -121,11 +330,11 @@ body{
 }
 
 .author strong {
-    color: var(--primaryColor);
+    color: var(--popHeading);
 }
 
 .contactLinks {
-    margin: 0 0 16px 0;
+    margin: 0;
     padding: 0;
     list-style: none;
 }
@@ -149,108 +358,4 @@ body{
     stroke-width: 2;
     stroke-linecap: round;
     stroke-linejoin: round;
-}
-
-.popupFooter {
-    margin: 0;
-    padding-top: 12px;
-    border-top: 1px solid var(--borderLight);
-}
-
-/*== "I log in as" radios (Config tab) ==*/
-.userTypeLegend {
-    float: none;
-    margin-bottom: 4px;
-    font-size: 1em;
-    font-weight: 600;
-}
-
-/*2 x 2 grid: Student, Personnel / Alumni, Other*/
-.userTypeGrid {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 4px 16px;
-}
-
-.userTypeGrid .form-check {
-    margin-bottom: 0;
-}
-
-/*== WSU colours for the Bootstrap controls ==*/
-a {
-    color: var(--primaryColor);
-}
-
-a:hover {
-    color: var(--linkHover);
-}
-
-/*Tabs: maroon underline on the active tab*/
-.nav-tabs {
-    border-bottom: 1px solid var(--borderLight);
-}
-
-.nav-tabs .nav-link {
-    border: 0;
-    border-bottom: 3px solid transparent;
-    border-radius: 0;
-    color: var(--txtMuted);
-}
-
-.nav-tabs .nav-link:hover, .nav-tabs .nav-link:focus {
-    border-color: transparent;
-    border-bottom-color: var(--borderLight);
-    color: var(--primaryColor);
-}
-
-.nav-tabs .nav-link.active {
-    border-bottom-color: var(--primaryColor);
-    background-color: transparent;
-    color: var(--primaryColor);
-    font-weight: 600;
-}
-
-/*Switches*/
-.form-check-input {
-    border-color: var(--inputBorder);
-}
-
-.form-switch .form-check-input,
-.form-switch .form-check-input:focus {
-    background-image: var(--switchKnobOff);
-}
-
-.form-check-input:checked {
-    background-color: var(--primaryColor);
-    border-color: var(--primaryColor);
-}
-
-.form-switch .form-check-input:checked,
-.form-switch .form-check-input:checked:focus {
-    background-image: var(--switchKnobOn);
-}
-
-/*Accordion (Config tab)*/
-.accordion-button:not(.collapsed) {
-    color: var(--primaryColor);
-    background-color: var(--primaryComp);
-    box-shadow: inset 0 -1px 0 var(--borderLight);
-}
-
-.accordion-button:not(.collapsed)::after {
-    background-image: var(--accordionIconOpen);
-}
-
-/*Ochre focus ring on every control*/
-.nav-link:focus-visible,
-.accordion-button:focus,
-.form-check-input:focus,
-a:focus-visible {
-    border-color: var(--focusColor);
-    outline: 0;
-    box-shadow: var(--focusRing);
-}
-
-.nav-tabs .nav-link:focus:not(:focus-visible) {
-    box-shadow: none;
 }
