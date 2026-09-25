@@ -16,12 +16,13 @@
     const FRAME = frameRole();
     //What is applied to this page, and how to undo it, see applySettings and revert below
     const applied = { theme: false, a11y: false };
-    const undo = { theme: [], a11y: [] };
+    //The login page has its own groups (see applyLogin): 'logo' and 'loginA11y'
+    const undo = { theme: [], a11y: [], logo: [], loginA11y: [] };
     //The device's light or dark setting, for the "Automatic" colour scheme
     const DARK_DEVICE = window.matchMedia('(prefers-color-scheme: dark)');
     let lastConfig = null; //Settings last applied, to apply again when the device setting changes
-    //Appearance settings on the login page, see setLoginAppearance
-    let loginAppearance = { colours: false, scheme: 'auto', noFooter: false };
+    const IS_LOGIN = currentURl.includes('mi_login');
+    let login = null; //What is applied to the login page, see applyLogin
 
     //Tooltips for the mark type codes in the subjects table
     const MARK_TYPES = {
@@ -61,53 +62,26 @@
         //Custom theme, custom colours and accessibility on the main menu page and its frames
         if (FRAME) applyConfig(arrConfig);
 
-        //Custom login, if i'm in the login page. The settings are read by name, see setting()
-        if (currentURl.includes('mi_login')) {
-            let docBody = document.body;
-            let customLogin = setting(arrConfig, 'customLogin') === true;
-            //Activate the custom login adding a class to the body
-            if (customLogin) docBody.classList.add("customLogin");
-
-            //Fix WSU logo. If the option is active I call the function
-            if (customLogin && setting(arrConfig, 'fixWSULogo') === true) fixWSULogo(360);
-
-            //CleanLogin
-            if (customLogin && setting(arrConfig, 'cleanLogin') === true) docBody.classList.add("cleanLogin");
-
+        //Login page: everything follows the settings, see applyLogin
+        if (IS_LOGIN) {
             //Remove the margin of the main div. The login page may not have one: without this check
             //the error stopped everything below from running when the page loaded
             let main = document.querySelector('.w3-main');
             if (main) main.removeAttribute('style');
 
-            //Keep the number label in step with the radio the user clicks (click and keyboard)
-            var loginForm = document.querySelector('form[name="frmLogin"]');
-            if (loginForm) {
-                ['click', 'change'].forEach(function (eventName) {
-                    loginForm.addEventListener(eventName, function (event) {
-                        if (event.target.name == 'numtype' && document.body.classList.contains('customLogin')) updateNumberLabel();
-                    });
-                });
-            }
-
-            //Login header, PIN label, number label and the missing space in the pin hint
-            if (customLogin) fixLoginTexts();
-
-            //Select the user type by default
-            if (customLogin && setting(arrConfig, 'userTypeDef') === true) selectUserType(setting(arrConfig, 'userType'));
-
-            //WSU colours, colour scheme and footer from the Appearance settings
-            setLoginAppearance(arrConfig);
+            applyLogin(arrConfig);
         }
 
     });
 
 
     //Replace the low-res WSU logo on the login page with the new one, keeping its aspect ratio.
-    //Keep the width in step with fixWSULogo in background.js. The main menu logo is in themeTop
+    //revert('logo') brings back the original. The main menu logo is in themeTop
     function fixWSULogo(logoWidth) {
 
         var wsuLogo = document.getElementsByTagName("img")[0];
         if (!wsuLogo) return;
+        ['height', 'width', 'style', 'src'].forEach(name => remember('logo', wsuLogo, name));
         wsuLogo.removeAttribute('height');
         wsuLogo.width = logoWidth;
         wsuLogo.style.height = 'auto';
@@ -220,49 +194,161 @@
         if (radio) radio.click();
     }
 
-    /*=== Login page: Appearance settings ===*/
-    //The login page takes the WSU colours, the colour scheme and "Hide the page footer" from the
-    //Appearance section, while "Use the improved login page" is on (it does not depend on the modern
-    //look). The customLogin class on <body> tells whether the improved login page is on: it is set when
-    //the page loads and live by background.js. Styles: login.css and dark.css
-    function setLoginAppearance(config) {
-        loginAppearance = {
-            colours: setting(config, 'customColors') === true,
+    /*=== Login page: the settings ===*/
+    //The modern look (customTheme) is the login page's master switch. With it on, the page takes the
+    //WSU colours, the colour scheme, the footer and the accessibility enhancements from Appearance,
+    //and the logo, the Prospective Students box and the user type from the Login page section.
+    //applyLogin runs when the page loads and again whenever the settings change
+    //(chrome.storage.onChanged below), applying and reverting only what changed.
+    //Classes: 'customLogin', 'cleanLogin' and 'customLoginColors' on <body> (login.css, dark.css),
+    //'ie-dark', 'ie-no-footer' and 'ie-a11y' on <html> (dark.css, login.css, accessibility.css)
+    function loginSettings(config) {
+        let on = setting(config, 'customTheme') === true;
+        return {
+            on: on,
+            logo: on && setting(config, 'fixWSULogo') === true,
+            clean: on && setting(config, 'cleanLogin') === true,
+            colours: on && setting(config, 'customColors') === true,
             scheme: setting(config, 'colourScheme') || 'auto',
-            noFooter: setting(config, 'hideFooter') === true
+            noFooter: on && setting(config, 'hideFooter') === true,
+            a11y: on && setting(config, 'wgca') === true,
+            userTypeDef: setting(config, 'userTypeDef') === true,
+            userType: setting(config, 'userType')
         };
-        updateLoginAppearance();
     }
 
-    function updateLoginAppearance() {
-        if (!currentURl.includes('mi_login')) return;
-        let on = document.body.classList.contains('customLogin');
-        let scheme = loginAppearance.scheme;
-        document.body.classList.toggle('customLoginColors', on && loginAppearance.colours);
-        document.documentElement.classList.toggle('ie-dark', on && (scheme == 'dark' || (scheme == 'auto' && DARK_DEVICE.matches)));
-        document.documentElement.classList.toggle('ie-no-footer', on && loginAppearance.noFooter);
+    function applyLogin(config) {
+        let settings = loginSettings(config);
+        let was = login || { on: false, logo: false, a11y: false, userTypeDef: false };
+        let body = document.body;
+        let root = document.documentElement;
+
+        //The accessibility changes are made on elements the modern look also changes (the labels),
+        //so they come off first and go back on last
+        if (was.a11y && !settings.a11y) {
+            revert('loginA11y');
+            root.classList.remove('ie-a11y');
+        }
+
+        //Layout (login.css), and the header, labels and pin hint
+        if (settings.on != was.on) {
+            body.classList.toggle('customLogin', settings.on);
+            if (settings.on) fixLoginTexts();
+            else restoreLoginTexts();
+        }
+
+        if (settings.logo != was.logo) {
+            if (settings.logo) fixWSULogo(360);
+            else revert('logo');
+        }
+
+        body.classList.toggle('cleanLogin', settings.clean);
+        body.classList.toggle('customLoginColors', settings.colours);
+        root.classList.toggle('ie-no-footer', settings.noFooter);
+
+        if (settings.a11y && !was.a11y) {
+            root.classList.add('ie-a11y');
+            loginAccessibility();
+        }
+
+        //Pre-select the user type when the page opens, and again when the choice changes. Turning it
+        //off goes back to Student, the portal's default
+        if (settings.on && settings.userTypeDef && (!was.on || !was.userTypeDef || settings.userType != was.userType)) {
+            selectUserType(settings.userType);
+        } else if (settings.on && was.on && was.userTypeDef && !settings.userTypeDef) {
+            selectUserType('S');
+        }
+
+        login = settings;
+        updateLoginDark();
     }
 
-    if (currentURl.includes('mi_login')) {
+    //Dark with the modern look on and the colour scheme set to Dark, or Automatic on a device set to dark
+    function updateLoginDark() {
+        let dark = !!login && login.on && (login.scheme == 'dark' || (login.scheme == 'auto' && DARK_DEVICE.matches));
+        document.documentElement.classList.toggle('ie-dark', dark);
+    }
+
+    if (IS_LOGIN) {
         chrome.storage.onChanged.addListener(function (changes, areaName) {
-            if (areaName == 'sync' && changes.config && Array.isArray(changes.config.newValue)) setLoginAppearance(changes.config.newValue);
+            if (areaName == 'sync' && changes.config && Array.isArray(changes.config.newValue)) applyLogin(changes.config.newValue);
         });
-        DARK_DEVICE.addEventListener('change', updateLoginAppearance);
+        DARK_DEVICE.addEventListener('change', updateLoginDark);
+
+        //Keep the number label in step with the radio the user clicks (click and keyboard)
+        let loginForm = document.querySelector('form[name="frmLogin"]');
+        if (loginForm) {
+            ['click', 'change'].forEach(function (eventName) {
+                loginForm.addEventListener(eventName, function (event) {
+                    if (event.target.name == 'numtype' && document.body.classList.contains('customLogin')) updateNumberLabel();
+                });
+            });
+        }
     }
 
-    //Used by the functions background.js injects when the popup settings change. Switching the
-    //improved login page on or off also switches the Appearance settings on the login page
-    window.iEnablerLogin = {
-        apply: function () {
-            fixLoginTexts();
-            updateLoginAppearance();
-        },
-        restore: function () {
-            restoreLoginTexts();
-            updateLoginAppearance();
-        },
-        selectUserType: selectUserType
-    };
+    /*=== Login page: accessibility (WCAG 2.2 AA) ===*/
+    //The markup changes; the visual part (focus ring, text size, targets, contrast) is in
+    //accessibility.css. Every change is reverted by revert('loginA11y')
+    function loginAccessibility() {
+        let root = document.documentElement;
+
+        //Language of the page (3.1.1)
+        if (!root.hasAttribute('lang')) setAttr('loginA11y', root, 'lang', 'en');
+
+        //The login area is the page's main content (1.3.1)
+        let area = document.querySelector('div.login');
+        if (area && !area.hasAttribute('role')) setAttr('loginA11y', area, 'role', 'main');
+
+        let form = document.querySelector('form[name="frmLogin"]');
+        if (!form) return;
+
+        //Radios (1.3.1, 2.5.8): each label names its radio, and clicking the label selects it
+        let radios = Array.from(form.querySelectorAll('input[name="numtype"]'));
+        radios.forEach(function (radio) {
+            let label = radio.nextElementSibling;
+            if (!label || label.tagName != 'LABEL' || label.htmlFor) return;
+            if (!radio.id) setAttr('loginA11y', radio, 'id', 'ienablerNumtype' + radio.value);
+            setAttr('loginA11y', label, 'for', radio.id);
+        });
+
+        //The radios as one group with a name (1.3.1): a fieldset whose legend only screen readers
+        //read, so the page looks the same. The radios stay in the form, so the portal's set_it() works
+        if (radios.length && radios.every(radio => radio.parentNode === radios[0].parentNode)) {
+            let last = radios[radios.length - 1];
+            let end = last.nextElementSibling && last.nextElementSibling.tagName == 'LABEL' ? last.nextElementSibling : last;
+            let fieldset = document.createElement('fieldset');
+            fieldset.className = 'ienablerRadioGroup';
+            let legend = fieldset.appendChild(document.createElement('legend'));
+            legend.className = 'ienablerVisuallyHidden';
+            legend.textContent = 'Log in as';
+            radios[0].before(fieldset);
+            let node = radios[0];
+            while (node) {
+                let next = node.nextSibling;
+                fieldset.appendChild(node);
+                if (node === end) break;
+                node = next;
+            }
+            undo.loginA11y.push(function () {
+                legend.remove();
+                fieldset.replaceWith(...fieldset.childNodes);
+            });
+        }
+
+        //Number and PIN: what they are for (1.3.5), a number keypad for the PIN, and the hint read
+        //out with the PIN (1.3.1)
+        let unum = form.querySelector('input[name="unum"]');
+        let pin = form.querySelector('input[name="pin"]');
+        if (unum && !unum.hasAttribute('autocomplete')) setAttr('loginA11y', unum, 'autocomplete', 'username');
+        if (!pin) return;
+        if (!pin.hasAttribute('autocomplete')) setAttr('loginA11y', pin, 'autocomplete', 'current-password');
+        if (!pin.hasAttribute('inputmode')) setAttr('loginA11y', pin, 'inputmode', 'numeric');
+        let hint = pin.nextElementSibling && pin.nextElementSibling.tagName == 'P' ? pin.nextElementSibling : null;
+        if (hint && !pin.hasAttribute('aria-describedby')) {
+            if (!hint.id) setAttr('loginA11y', hint, 'id', 'ienablerPinHint');
+            setAttr('loginA11y', pin, 'aria-describedby', hint.id);
+        }
+    }
 
     /*=== Main menu page: custom theme, custom colours and accessibility ===*/
     //The main menu page (mi_main_menu) holds two iframes: F1, the menu in the sidebar, and F3, the
@@ -283,8 +369,8 @@
     }
 
     //The Appearance settings. On these pages colours, accessibility, the colour scheme and hiding the
-    //footer only apply with the modern look (customTheme); the login page has its own rule, see
-    //setLoginAppearance. 'dark' is the colour scheme worked out for this page:
+    //footer only apply with the modern look (customTheme), as on the login page (see applyLogin).
+    //'dark' is the colour scheme worked out for this page:
     //Dark, or Automatic on a device set to dark
     function themeSettings(config) {
         let theme = setting(config, 'customTheme') === true;

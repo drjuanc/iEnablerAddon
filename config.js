@@ -1,21 +1,20 @@
 /*Default settings and how to bring stored settings up to date.
 Shared by background.js (importScripts) and the popup (popup.html), so both use the same defaults*/
 
-//Default configuration. The popup and content scripts read it by index, so keep the order.
-//WSU colours [1], the colour scheme and hiding the footer also apply to the login page, with the
-//improved login page on (see content/content.js)
+//Default configuration. The popup reads it by index, so keep the order.
+//The modern look [0] is the master switch for the iEnabler pages and the login page: every other
+//option applies only while it is on (see content/content.js)
 const DEFAULT_CONFIG = [
-    ['customTheme', true],       //[0]
+    ['customTheme', true],       //[0] the modern look
     ['customColors', true],      //[1]
     ['wgca', true],              //[2]
-    ['customLogin', true],       //[3]
-    ['fixWSULogo', true],       //[4]
-    ['userTypeDef', false],       //[5] select the user type below by default on the login page
-    ['cleanLogin', true],       //[6]
-    ['otherConfg', false],       //[7]
-    ['userType', 'S'],           //[8] S student, P personnel, A alumni, O other (values of the login radios)
-    ['colourScheme', 'auto'],    //[9] auto (follows the device), light or dark: the popup always, the iEnabler pages with the modern look, the login page with the improved login page
-    ['hideFooter', false]        //[10] hide the bar of portal links at the bottom of the main page (with the modern look) and the login page (with the improved login page)
+    ['fixWSULogo', true],       //[3]
+    ['userTypeDef', false],       //[4] select the user type below by default on the login page
+    ['cleanLogin', true],       //[5]
+    ['otherConfg', false],       //[6]
+    ['userType', 'S'],           //[7] S student, P personnel, A alumni, O other (values of the login radios)
+    ['colourScheme', 'auto'],    //[8] auto (follows the device), light or dark: the popup always, the iEnabler pages and the login page with the modern look
+    ['hideFooter', false]        //[9] hide the bar of portal links at the bottom of the main page and the login page (with the modern look)
 
 ];
 
@@ -42,6 +41,15 @@ function mergeConfig(storedConfig) {
     //Before v2.0.0 the login page had its own 'WSU colours' switch. It now follows the Appearance one
     //(customColors), so the old setting is dropped rather than kept at the end below
     storedConfig = storedConfig.filter(item => !(Array.isArray(item) && item[0] === 'customLoginColors'));
+
+    //Before v2.0.0 the login page had its own master switch, 'Use the improved login page'. The modern
+    //look now covers both, and is on if either of the two was on
+    let customLogin = storedConfig.find(item => Array.isArray(item) && item[0] === 'customLogin');
+    storedConfig = storedConfig.filter(item => !(Array.isArray(item) && item[0] === 'customLogin'));
+    if (customLogin && customLogin[1] === true) {
+        storedConfig = storedConfig.filter(item => !(Array.isArray(item) && item[0] === 'customTheme'));
+        storedConfig.push(['customTheme', true]);
+    }
 
     let merged = DEFAULT_CONFIG.map(function ([key, value]) {
         let existing = storedConfig.find(item => Array.isArray(item) && item[0] === key);

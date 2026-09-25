@@ -14,9 +14,7 @@
 
   "permissions": [
     "storage",
-    "activeTab",
-    "notifications",
-    "scripting"
+    "notifications"
   ],
   "host_permissions": [
     "https://*.ieweb.wsu.ac.za/*"

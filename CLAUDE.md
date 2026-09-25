@@ -5,13 +5,13 @@ Browser extension (Chrome/Edge) that improves the look and usability of the Walt
 ## Project structure
 
 - `manifest.json`: extension manifest
-- `background.js`: background/service worker script
-- `config.js`: default settings and `mergeConfig`, shared by `background.js` (importScripts) and the popup. The config is an array of `[key, value]` pairs read by index in the popup (`content.js` reads it by key); removing an entry shifts every later index. `mergeConfig` also migrates old settings (e.g. drops `customLoginColors`)
+- `background.js`: background service worker: saves the defaults on install and runs `mergeConfig` on update. No messages: the pages apply settings themselves
+- `config.js`: default settings and `mergeConfig`, shared by `background.js` (importScripts) and the popup. The config is an array of `[key, value]` pairs read by index in the popup (`content.js` reads it by key); removing an entry shifts every later index. `mergeConfig` also migrates old settings (drops `customLoginColors`; folds `customLogin` into `customTheme`, on if either was on)
 - `content/`: content scripts injected into iEnabler pages
   - `content.js`: login page, and the main menu page and its frames (F1 menu, F3 content), including the subjects table. Theme, colours, accessibility and the dark colour scheme (`ie-dark`) apply and revert live via `chrome.storage.onChanged`
-    - Login page: all its changes need "Use the improved login page" (`customLogin`, `body.customLogin`), not the modern look. With it on, the page also follows the Appearance settings WSU colours (`body.customLoginColors`), Colour scheme (`html.ie-dark`) and Hide the page footer (`html.ie-no-footer`), live via `chrome.storage.onChanged`; the login page switches apply live through messages to `background.js`
+    - Login page (`applyLogin`): "Use the modern look" (`customTheme`) is its master switch too (`body.customLogin`: layout, labels, header/PIN/hint text fixes). With it on, the page follows Appearance: WSU colours (`body.customLoginColors`), Colour scheme (`html.ie-dark`), Hide the page footer (`html.ie-no-footer`), Accessibility enhancements (`html.ie-a11y`: radio labels and fieldset, autocomplete, PIN hint, `lang`, `role="main"`; undo group `loginA11y`), and the Login page options (logo, pre-select, Prospective Students box). All live via `chrome.storage.onChanged`
   - `css/`: styling for login page, main menu (`content.css`), frames (`framef1.css`, `framef3.css`), `accessibility.css`, `dark.css` (dark colour scheme, `html.ie-dark`, injected last) and shared variables
-- `popup/`: extension popup (`popup.html`, `popup.js`, `popup.css`, `theme.js`), plain HTML, CSS and JS. Settings and About tabs. The Colour scheme setting (Automatic, Light, Dark; config `colourScheme`) always sets the popup's theme (`--pop*` roles in `content/css/variables.css`) and adds `ie-dark` to the iEnabler pages (main menu: with the modern look on; login page: with the improved login page on). In Appearance, WSU colours and Hide the page footer are enabled while the modern look or the improved login page is on; Accessibility enhancements only with the modern look
+- `popup/`: extension popup (`popup.html`, `popup.js`, `popup.css`, `theme.js`), plain HTML, CSS and JS. Settings and About tabs. The Colour scheme setting (Automatic, Light, Dark; config `colourScheme`) always sets the popup's theme (`--pop*` roles in `content/css/variables.css`) and adds `ie-dark` to the iEnabler pages and the login page with the modern look on. Every other option, in Appearance and in the Login page section, is disabled (shown off, keeping its own setting) while the modern look is off
 - `assets/`: fonts, icons (16–128 px) and the WSU logo (`pics/wsu-logo-new.png`)
 - `lib/`: third-party libraries. Do not edit these files.
   - Login page: `bootstrap.css` (content-script stylesheet, `*mi_login*` only)
@@ -41,7 +41,7 @@ Browser extension (Chrome/Edge) that improves the look and usability of the Walt
 
 ## Rewrite goals
 
-- Future task: convert the whole config from an index-based array to named keys everywhere (`config.js`, `popup.js`, `content.js`, `background.js`), with a migration in `mergeConfig`. Not started.
+- Future task: convert the whole config from an index-based array to named keys everywhere (`config.js`, `popup.js`; `content.js` already reads by key), with a migration in `mergeConfig`. Not started.
 
 <!-- Add your goals here, for example:
 - Migrate to Manifest V3 (if not already)

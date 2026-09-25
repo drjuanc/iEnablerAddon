@@ -1,9 +1,10 @@
 /*Colours are defined in variables.css, injected before this file (see manifest.json)*/
 
-/*"Improve accessibility" switch (WCAG 2.2 AA) on the main menu page and its frames.
-content/content.js adds 'ie-a11y' to <html> when the custom theme and this switch are both on.
-The changes to the markup (labels, headers, alt text, frame titles, skip link, keyboard) are
-made by content/content.js, this file only has the visual part*/
+/*"Accessibility enhancements" switch (WCAG 2.2 AA) on the main menu page and its frames, and on the
+login page (body.customLogin). content/content.js adds 'ie-a11y' to <html> when the modern look and
+this switch are both on. The changes to the markup (labels, headers, alt text, frame titles, skip
+link, keyboard, the login radios' fieldset) are made by content/content.js, this file only has the
+visual part. The focus ring and the contrast rules below apply to the login page as they are*/
 
 /*== Focus ring (2.4.7, 1.4.11) ==*/
 /*Maroon inner ring and ochre outer ring: ochre alone is under 3:1 on cream and light grey,
@@ -97,5 +98,69 @@ then apply to every link and open large gaps. Collapsed submenus are not in the 
 
 /*Muted text at 7.8:1 on white*/
 .ie-a11y .text-muted {
+    color: var(--txtMuted) !important;
+}
+
+/*== Login page (body.customLogin) ==*/
+/*The fieldset content.js puts round the Student/Personnel/Other/Alumni radios adds no box, and its
+legend is read by screen readers only, so the page looks as before*/
+.ie-a11y body.customLogin .ienablerRadioGroup {
+    margin: 0;
+    padding: 0;
+    border: 0;
+    min-width: 0;
+}
+
+/*The fieldset ends the line itself, so the portal's first <br> after the radios would add an empty one*/
+.ie-a11y body.customLogin .ienablerRadioGroup + br {
+    display: none;
+}
+
+.ie-a11y body.customLogin .ienablerVisuallyHidden {
+    position: absolute !important;
+    width: 1px;
+    height: 1px;
+    margin: -1px;
+    padding: 0;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+    border: 0;
+}
+
+/*Larger radios (20px), and their labels, now linked to them, at least 24px high to click (2.5.8)*/
+.ie-a11y body.customLogin form[name="frmLogin"] input[name="numtype"] {
+    width: 20px;
+    height: 20px;
+    margin: 0 6px 0 0;
+    vertical-align: middle;
+    cursor: pointer;
+}
+
+.ie-a11y body.customLogin form[name="frmLogin"] input[name="numtype"] + label {
+    display: inline-block;
+    min-height: 24px;
+    line-height: 24px;
+    vertical-align: middle;
+    cursor: pointer;
+}
+
+/*Readable text: at least 1rem for the pin hint, and for the labels on smaller screens (login.css
+makes them 0.9rem there). The buttons keep their size, which login.css fits to one row, and are
+already taller than 32px (2.5rem), as on the main pages*/
+.ie-a11y body.customLogin form[name="frmLogin"] input[name="pin"] + p,
+.ie-a11y body.customLogin #login_left p {
+    font-size: 1rem !important;
+}
+
+@media (max-width: 1000px) {
+    .ie-a11y body.customLogin label {
+        font-size: 1rem !important;
+    }
+}
+
+/*Contrast (1.4.3): without the WSU colours the footer text and links are light grey on light grey*/
+html.ie-a11y:not(.ie-dark) body.customLogin:not(.customLoginColors) td.customfooter,
+html.ie-a11y:not(.ie-dark) body.customLogin:not(.customLoginColors) td.customfooter a {
     color: var(--txtMuted) !important;
 }

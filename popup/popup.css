@@ -143,7 +143,12 @@ a:hover {
     padding: 10px 0;
 }
 
-.card + .card {
+/*Short description at the top of a section, above its first card*/
+.sectionIntro {
+    margin: 10px 0 0 0;
+}
+
+.card + .card, .sectionIntro + .card {
     border-top: 1px solid var(--popBorder);
 }
 

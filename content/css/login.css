@@ -1,6 +1,8 @@
 /*Colours are defined in variables.css, injected before this file (see manifest.json)*/
 
 /*===Login page multiple tweaks ====*/
+/*The modern look on the login page: content/content.js adds 'customLogin' to <body> while
+"Use the modern look" is on*/
 /*Body*/
 
 body.w3-margin-left.customLogin {
@@ -209,7 +211,7 @@ the row fits down to a window 480px wide. Below 480px the buttons wrap and go ba
 }
 
 /*"Hide the page footer" (Appearance): content/content.js adds 'ie-no-footer' to <html> with the
-improved login page on*/
+modern look on*/
 html.ie-no-footer body.customLogin #login_bottom {
     display: none !important;
 }
