@@ -63,24 +63,14 @@ chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
 
             case 'customLogin':
 
-                if (request.param) {                                    
-                    insertScript(addCustomLogin); //Activate the custom login adding a class to the body    
-                    insertScript(addCustomLoginColors); //New colors
-                    insertScript(fixWSULogo); //Fix the logo 
-                    
+                //The WSU colours, colour scheme and footer (Appearance settings) follow, see iEnablerLogin in content/content.js
+                if (request.param) {
+                    insertScript(addCustomLogin); //Activate the custom login adding a class to the body
+                    insertScript(fixWSULogo); //Fix the logo
+
                 } else {
                     insertScript(removeCustomLogin); //deactivate the custom login adding a class to the body
-                    insertScript(removeCustomLoginColors); //deactivate the new colors
-                    insertScript(unFixWSULogo); //unfix the logo  
-                }
-                break;
-
-            case 'customLoginColors':
-
-                if (request.param) {  
-                    insertScript(addCustomLoginColors); //New colors
-                } else {
-                    insertScript(removeCustomLoginColors); //deactivate the new colors
+                    insertScript(unFixWSULogo); //unfix the logo
                 }
                 break;
 
@@ -158,7 +148,7 @@ function unFixWSULogo() {
 function addCustomLogin() {
     document.body.classList.add("customLogin");
 
-    //Login wording and labels, see iEnablerLogin in content/content.js
+    //Login wording and labels, and the Appearance settings (WSU colours, colour scheme, footer), see iEnablerLogin in content/content.js
     if (window.iEnablerLogin) window.iEnablerLogin.apply();
 }
 
@@ -166,18 +156,8 @@ function addCustomLogin() {
 function removeCustomLogin() {
     document.body.classList.remove('customLogin');
 
-    //Bring back the original login wording and labels
+    //Bring back the original login wording and labels, and take off the Appearance settings
     if (window.iEnablerLogin) window.iEnablerLogin.restore();
-}
-
-//add the class 'customLoginColors' to the body to enable the new theme
-function addCustomLoginColors() {
-    document.body.classList.add("customLoginColors");
-}
-
-//remove the class 'customLoginColors' bringing back the old colors
-function removeCustomLoginColors() {
-    document.body.classList.remove('customLoginColors');
 }
 
 //Select the user type radio on the login page (see iEnablerLogin in content/content.js)

@@ -3,7 +3,8 @@
 /*Dark colour scheme for the iEnabler pages. Injected last, so it goes over every other stylesheet.
 content/content.js adds 'ie-dark' to <html>:
 - main menu page and its frames (ie-top, ie-f1, ie-f3): with "Use the modern look" on
-- login page: with "Use the improved login page" on (body.customLogin)
+- login page: with "Use the improved login page" on (body.customLogin), whatever the modern look;
+  body.customLoginColors there follows the Appearance "WSU colours"
 and the Colour scheme set to Dark, or Automatic on a device set to dark.
 The light stylesheets are untouched: every rule here is one class stronger than the light rule it
 replaces, with !important because many light rules (and the portal's w3.css) use it.

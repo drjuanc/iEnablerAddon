@@ -20,7 +20,8 @@
     //The device's light or dark setting, for the "Automatic" colour scheme
     const DARK_DEVICE = window.matchMedia('(prefers-color-scheme: dark)');
     let lastConfig = null; //Settings last applied, to apply again when the device setting changes
-    let loginScheme = 'auto'; //Colour scheme on the login page, see updateLoginDark
+    //Appearance settings on the login page, see setLoginAppearance
+    let loginAppearance = { colours: false, scheme: 'auto', noFooter: false };
 
     //Tooltips for the mark type codes in the subjects table
     const MARK_TYPES = {
@@ -60,23 +61,23 @@
         //Custom theme, custom colours and accessibility on the main menu page and its frames
         if (FRAME) applyConfig(arrConfig);
 
-        //Custom login, if i'm in the login page
+        //Custom login, if i'm in the login page. The settings are read by name, see setting()
         if (currentURl.includes('mi_login')) {
             let docBody = document.body;
+            let customLogin = setting(arrConfig, 'customLogin') === true;
             //Activate the custom login adding a class to the body
-            if (arrConfig[3][0] == 'customLogin' && arrConfig[3][1]) docBody.classList.add("customLogin");
-
-            //Activate the custom login colors adding a class to the body
-            if (arrConfig[4][0] == 'customLoginColors' && arrConfig[4][1]) docBody.classList.add("customLoginColors");
+            if (customLogin) docBody.classList.add("customLogin");
 
             //Fix WSU logo. If the option is active I call the function
-            if ((arrConfig[5][0] == 'fixWSULogo' && arrConfig[5][1]) && (arrConfig[3][1])) fixWSULogo(360);
+            if (customLogin && setting(arrConfig, 'fixWSULogo') === true) fixWSULogo(360);
 
             //CleanLogin
-            if ((arrConfig[7][0] == 'cleanLogin' && arrConfig[7][1]) && (arrConfig[3][1])) docBody.classList.add("cleanLogin");
+            if (customLogin && setting(arrConfig, 'cleanLogin') === true) docBody.classList.add("cleanLogin");
 
-            //Remove the margin of the main div
-            document.getElementsByClassName('w3-main')[0].removeAttribute('style');
+            //Remove the margin of the main div. The login page may not have one: without this check
+            //the error stopped everything below from running when the page loaded
+            let main = document.querySelector('.w3-main');
+            if (main) main.removeAttribute('style');
 
             //Keep the number label in step with the radio the user clicks (click and keyboard)
             var loginForm = document.querySelector('form[name="frmLogin"]');
@@ -89,13 +90,13 @@
             }
 
             //Login header, PIN label, number label and the missing space in the pin hint
-            if (arrConfig[3][1]) fixLoginTexts();
+            if (customLogin) fixLoginTexts();
 
             //Select the user type by default
-            if ((arrConfig[6][0] == 'userTypeDef' && arrConfig[6][1]) && (arrConfig[3][1]) && arrConfig[9] && arrConfig[9][0] == 'userType') selectUserType(arrConfig[9][1]);
+            if (customLogin && setting(arrConfig, 'userTypeDef') === true) selectUserType(setting(arrConfig, 'userType'));
 
-            //Dark colour scheme, with the improved login page on
-            setLoginScheme(arrConfig);
+            //WSU colours, colour scheme and footer from the Appearance settings
+            setLoginAppearance(arrConfig);
         }
 
     });
@@ -219,37 +220,46 @@
         if (radio) radio.click();
     }
 
-    /*=== Login page: dark colour scheme ===*/
-    //Dark while "Use the improved login page" is on and the colour scheme is Dark, or Automatic on a
-    //device set to dark (styles in dark.css). The customLogin class on <body> tells whether the
-    //improved login page is on: it is set when the page loads and live by background.js
-    function setLoginScheme(config) {
-        loginScheme = Array.isArray(config) && Array.isArray(config[10]) && config[10][0] == 'colourScheme' ? config[10][1] : 'auto';
-        updateLoginDark();
+    /*=== Login page: Appearance settings ===*/
+    //The login page takes the WSU colours, the colour scheme and "Hide the page footer" from the
+    //Appearance section, while "Use the improved login page" is on (it does not depend on the modern
+    //look). The customLogin class on <body> tells whether the improved login page is on: it is set when
+    //the page loads and live by background.js. Styles: login.css and dark.css
+    function setLoginAppearance(config) {
+        loginAppearance = {
+            colours: setting(config, 'customColors') === true,
+            scheme: setting(config, 'colourScheme') || 'auto',
+            noFooter: setting(config, 'hideFooter') === true
+        };
+        updateLoginAppearance();
     }
 
-    function updateLoginDark() {
-        let on = document.body.classList.contains('customLogin') && (loginScheme == 'dark' || (loginScheme == 'auto' && DARK_DEVICE.matches));
-        document.documentElement.classList.toggle('ie-dark', on);
+    function updateLoginAppearance() {
+        if (!currentURl.includes('mi_login')) return;
+        let on = document.body.classList.contains('customLogin');
+        let scheme = loginAppearance.scheme;
+        document.body.classList.toggle('customLoginColors', on && loginAppearance.colours);
+        document.documentElement.classList.toggle('ie-dark', on && (scheme == 'dark' || (scheme == 'auto' && DARK_DEVICE.matches)));
+        document.documentElement.classList.toggle('ie-no-footer', on && loginAppearance.noFooter);
     }
 
     if (currentURl.includes('mi_login')) {
         chrome.storage.onChanged.addListener(function (changes, areaName) {
-            if (areaName == 'sync' && changes.config && Array.isArray(changes.config.newValue)) setLoginScheme(changes.config.newValue);
+            if (areaName == 'sync' && changes.config && Array.isArray(changes.config.newValue)) setLoginAppearance(changes.config.newValue);
         });
-        DARK_DEVICE.addEventListener('change', updateLoginDark);
+        DARK_DEVICE.addEventListener('change', updateLoginAppearance);
     }
 
     //Used by the functions background.js injects when the popup settings change. Switching the
-    //improved login page on or off also switches the dark colour scheme
+    //improved login page on or off also switches the Appearance settings on the login page
     window.iEnablerLogin = {
         apply: function () {
             fixLoginTexts();
-            updateLoginDark();
+            updateLoginAppearance();
         },
         restore: function () {
             restoreLoginTexts();
-            updateLoginDark();
+            updateLoginAppearance();
         },
         selectUserType: selectUserType
     };
@@ -272,20 +282,28 @@
         return { F1: 'f1', F3: 'f3' }[window.name] || null;
     }
 
-    //The Appearance settings. Colours, accessibility and the colour scheme only apply with the
-    //modern look (customTheme), as in the popup. 'dark' is the colour scheme worked out for this page:
+    //The Appearance settings. On these pages colours, accessibility, the colour scheme and hiding the
+    //footer only apply with the modern look (customTheme); the login page has its own rule, see
+    //setLoginAppearance. 'dark' is the colour scheme worked out for this page:
     //Dark, or Automatic on a device set to dark
     function themeSettings(config) {
-        let entry = (index, key) => Array.isArray(config) && Array.isArray(config[index]) && config[index][0] == key ? config[index][1] : undefined;
-        let theme = entry(0, 'customTheme') === true;
-        let scheme = entry(10, 'colourScheme') || 'auto';
+        let theme = setting(config, 'customTheme') === true;
+        let scheme = setting(config, 'colourScheme') || 'auto';
         return {
             theme: theme,
-            colours: theme && entry(1, 'customColors') === true,
-            a11y: theme && entry(2, 'wgca') === true,
+            colours: theme && setting(config, 'customColors') === true,
+            a11y: theme && setting(config, 'wgca') === true,
             dark: theme && (scheme == 'dark' || (scheme == 'auto' && DARK_DEVICE.matches)),
-            noFooter: theme && entry(11, 'hideFooter') === true
+            noFooter: theme && setting(config, 'hideFooter') === true
         };
+    }
+
+    //Value of a setting by its name, or undefined. Stored settings are an array of [name, value]
+    //(see config.js); reading them by name here means a config in an older order, such as one synced
+    //from a computer that has not updated yet, never gives the wrong setting
+    function setting(config, key) {
+        let item = Array.isArray(config) ? config.find(entry => Array.isArray(entry) && entry[0] == key) : undefined;
+        return item ? item[1] : undefined;
     }
 
     function applyConfig(config) {

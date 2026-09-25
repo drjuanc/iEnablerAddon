@@ -20,7 +20,7 @@
         <!--===== Settings tab =====-->
         <div class="panel" role="tabpanel" id="panelSettings" aria-labelledby="tabSettings" tabindex="0">
 
-            <!--Appearance of the iEnabler pages after login-->
+            <!--Appearance of the iEnabler pages after login; the WSU colours, footer and colour scheme also apply to the login page-->
             <section class="section">
                 <h2 class="sectionHeading">
                     <button type="button" class="sectionToggle" id="toggleAppearance" aria-expanded="true" aria-controls="sectionAppearance">Appearance</button>
@@ -38,7 +38,7 @@
                         <div class="setting">
                             <input type="checkbox" role="switch" class="switch" id="customColors" aria-describedby="customColorsHint">
                             <label for="customColors">WSU colours</label>
-                            <p class="hint" id="customColorsHint">Apply the official WSU colours to the menu, headings and tables.</p>
+                            <p class="hint" id="customColorsHint">Apply the official WSU colours to the menu, headings and tables, and to the login page.</p>
                         </div>
                         <div class="setting">
                             <input type="checkbox" role="switch" class="switch" id="wcga" aria-describedby="wcgaHint">
@@ -48,14 +48,14 @@
                         <div class="setting">
                             <input type="checkbox" role="switch" class="switch" id="hideFooter" aria-describedby="hideFooterHint">
                             <label for="hideFooter">Hide the page footer</label>
-                            <p class="hint" id="hideFooterHint">Removes the bar of portal links (Contact Us, Disclaimer and others) at the bottom of the page, giving more room.</p>
+                            <p class="hint" id="hideFooterHint">Removes the bar of portal links (Contact Us, Disclaimer and others) at the bottom of the iEnabler pages and the login page, giving more room.</p>
                         </div>
                     </div>
                     <div class="card">
                         <!--Always enabled: it also sets this window's theme and the login page (see popup.js)-->
                         <fieldset id="colourSchemeGroup" aria-describedby="colourSchemeHint">
                             <legend class="cardTitle">Colour scheme</legend>
-                            <p class="hint" id="colourSchemeHint">Light or dark for this window and the iEnabler pages. Automatic follows your device. The pages need &ldquo;Use the modern look&rdquo; on (the login page: &ldquo;Use the improved login page&rdquo;).</p>
+                            <p class="hint" id="colourSchemeHint">Light or dark for this window, the iEnabler pages and the login page. Automatic follows your device. The iEnabler pages need &ldquo;Use the modern look&rdquo; on; the login page needs &ldquo;Use the improved login page&rdquo; on.</p>
                             <div class="segmented">
                                 <input type="radio" name="colourScheme" id="colourSchemeAuto" value="auto" checked>
                                 <label for="colourSchemeAuto">Automatic</label>
@@ -77,18 +77,13 @@
                 <div class="sectionBody" id="sectionLogin" role="region" aria-labelledby="toggleLogin" hidden>
                     <div class="card">
                         <h3 class="cardTitle">Improved login page</h3>
-                        <p class="hint" id="customLoginHint">A clearer, simpler login page with better labels.</p>
+                        <p class="hint" id="customLoginHint">A clearer, simpler login page with better labels. Its colours, colour scheme and footer follow the Appearance settings.</p>
                         <div class="setting">
                             <input type="checkbox" role="switch" class="switch" id="customLogin" aria-describedby="customLoginHint">
                             <label for="customLogin">Use the improved login page</label>
                         </div>
                     </div>
                     <div class="card">
-                        <div class="setting">
-                            <input type="checkbox" role="switch" class="switch" id="customLoginColors" aria-describedby="customLoginColorsHint">
-                            <label for="customLoginColors">WSU colours</label>
-                            <p class="hint" id="customLoginColorsHint">Apply the official WSU colours to the login page.</p>
-                        </div>
                         <div class="setting">
                             <input type="checkbox" role="switch" class="switch" id="fixLogo" aria-describedby="fixLogoHint">
                             <label for="fixLogo">New WSU logo</label>

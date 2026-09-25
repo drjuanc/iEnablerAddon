@@ -208,6 +208,18 @@ the row fits down to a window 480px wide. Below 480px the buttons wrap and go ba
     padding: 4px 0 !important;
 }
 
+/*"Hide the page footer" (Appearance): content/content.js adds 'ie-no-footer' to <html> with the
+improved login page on*/
+html.ie-no-footer body.customLogin #login_bottom {
+    display: none !important;
+}
+
+/*The large space kept under the login box for the footer goes too, so the page does not scroll to
+an empty band*/
+html.ie-no-footer body.customLogin .login.w3-row {
+    margin-bottom: 2rem;
+}
+
 
 .customLogin .w3-row{
     margin-bottom: 8rem;
