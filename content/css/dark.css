@@ -306,6 +306,18 @@ html.ie-dark.ie-theme.ie-f3 .ienablerCount {
     color: var(--dk-muted) !important;
 }
 
+/*Results tables other than the subjects table, such as the marks table (see framef3.css). The
+#tbSubjects rules above win over these, and so do the row hover and the deregistered rows*/
+html.ie-dark.ie-theme.ie-f3 table.rltable tr.rlheader > td {
+    color: var(--dk-text) !important;
+    background-color: var(--dk-raised) !important;
+    border-bottom-color: var(--dk-rule) !important;
+}
+
+html.ie-dark.ie-theme.ie-f3 table.rltable tr:not(.rlheader, .rowover) > td {
+    background-color: var(--dk-surface) !important;
+}
+
 /*Portal pop-ups, drawn by overlib in #overDiv:
 - hover tooltips on table cells: a frame table around a text table, text in <font color="#000000">
 - the subject menu: the same with a caption ("CHOOSE AN OPTION") and CLOSE. content.js adds

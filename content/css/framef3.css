@@ -442,6 +442,20 @@ body and h1-h6 rules (12px Arial, 16px bold)*/
     background-color: unset !important;
 }
 
+/*Results tables other than the subjects table, such as the marks table: the portal's own layout,
+with a header row and spacing like the subjects table*/
+.ie-theme.ie-f3 table.rltable tr.rlheader > td {
+    padding: .5rem .75rem;
+    font-weight: 600;
+    background-color: var(--neutral-100);
+    border-bottom: 2px solid var(--neutral-300);
+}
+
+.ie-theme.ie-f3 table.rltable tr.rldata > td {
+    padding: .35rem .75rem;
+    vertical-align: middle;
+}
+
 /*Forms and controls*/
 .ie-theme.ie-f3 form[name="qrycrit"] > table.datadisp {
     width: 350px;

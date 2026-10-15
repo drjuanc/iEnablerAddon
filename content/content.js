@@ -525,39 +525,45 @@
         });
     }
 
-    //Subjects table (the first .rltable): a real header, tooltips, and a search box that filters
-    //the rows. The rows stay the portal's own elements, so the subject links (do_menu) work as
-    //before. Reverting puts back a copy of the table taken before any change
+    //Subjects table: a real header, tooltips, and a search box that filters the rows. The rows stay
+    //the portal's own elements, so the subject links (do_menu) work as before. Every change is undone
+    //in place (see revert), so the table and everything in it stay the same live elements
     function subjectsTable() {
-        let table = document.querySelector('table.rltable');
-        let fakeHeader = table ? table.querySelector('tr.rlheader') : null;
-        if (!fakeHeader) return;
+        let table = findSubjectsTable();
+        if (!table) return;
+        let fakeHeader = table.querySelector('tr.rlheader');
 
-        let original = table.cloneNode(true);
-
-        //The portal's header is an ordinary row: make it a real <thead>
+        //The portal's header is an ordinary row: make it a real <thead>. Reverting puts the
+        //portal's row back where it was
         let thead = document.createElement('thead');
         let headerRow = thead.appendChild(document.createElement('tr'));
         Array.from(fakeHeader.cells).forEach(function (cell) {
             headerRow.appendChild(document.createElement('th')).innerHTML = cell.innerHTML;
         });
+        let headerParent = fakeHeader.parentNode;
+        let headerNext = fakeHeader.nextSibling;
         table.prepend(thead);
         fakeHeader.remove();
+        undo.theme.push(function () {
+            thead.remove();
+            headerParent.insertBefore(fakeHeader, headerNext);
+        });
 
-        table.id = 'tbSubjects';
+        setAttr('theme', table, 'id', 'tbSubjects');
 
         //Columns 2, 5 and 6 hold mark type codes
         table.querySelectorAll('tbody td:nth-child(2), tbody td:nth-child(5), tbody td:nth-child(6)').forEach(function (cell) {
             let code = cell.innerHTML;
-            cell.setAttribute('data-placement', 'top');
-            cell.setAttribute('data-toggle', 'Tooltip');
-            cell.setAttribute('title', Object.prototype.hasOwnProperty.call(MARK_TYPES, code) ? MARK_TYPES[code] : 'Unknown Mark Type');
+            setAttr('theme', cell, 'data-placement', 'top');
+            setAttr('theme', cell, 'data-toggle', 'Tooltip');
+            setAttr('theme', cell, 'title', Object.prototype.hasOwnProperty.call(MARK_TYPES, code) ? MARK_TYPES[code] : 'Unknown Mark Type');
         });
 
         //What the search looks in for each row: the cell text, the tooltips and the subject name
         let rows = Array.from(table.tBodies).flatMap(tbody => Array.from(tbody.rows));
         let searchText = new Map();
         rows.forEach(function (row) {
+            remember('theme', row, 'hidden'); //The search hides rows
             let words = [];
             Array.from(row.cells).forEach(function (cell) {
                 words.push(cell.textContent);
@@ -566,7 +572,7 @@
             let link = row.querySelector('a[onclick*="do_menu"]');
             let name = link ? subjectName(link.getAttribute('onclick')) : null;
             if (name) {
-                if (!link.title) link.title = name;
+                if (!link.title) setAttr('theme', link, 'title', name);
                 words.push(name);
             }
             searchText.set(row, words.join(' ').replace(/\s+/g, ' ').toLowerCase());
@@ -613,8 +619,15 @@
         undo.theme.push(function () {
             clearTimeout(countTimer);
             tools.remove();
-            table.replaceWith(original);
         });
+    }
+
+    //The subjects table is the .rltable with a header row and subject links (do_menu). A table with
+    //fields, such as the marks table on the marks pages, never is, whatever links it has
+    function findSubjectsTable() {
+        return Array.from(document.querySelectorAll('table.rltable')).find(function (table) {
+            return table.querySelector('tr.rlheader') && table.querySelector('a[onclick*="do_menu"]') && !table.querySelector('input, select');
+        }) || null;
     }
 
     //Subject name: the 13th argument of the row's do_menu('2026','AEM37W0',...) call. The onclick
