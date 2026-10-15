@@ -740,11 +740,15 @@
 
     /*=== Paste from Excel ===*/
     //On the pages that enter the marks of many students at once, a button above the form fills
-    //the mark fields from a column copied from Excel, in the order the students appear
+    //the mark fields from a column copied from Excel, in the order the students appear.
+    //On the marks pages (MARKS_PAGES) students who are no longer registered can be flagged first,
+    //see Deregistered students below: the paste leaves their rows out
+    const MARKS_PAGES = ['w26pkg.w26savemulti', 'w06pkg.w06savemulti'];
+    const IAHY_PAGE = 'web.w06pkg.w06_upd_multi_proc';
     var markForm = document.querySelector('form[name="frmOne"]');
     var allMarksUrl = markForm ? markForm.getAttribute('action') : undefined;
 
-    if (allMarksUrl == 'w26pkg.w26savemulti' || allMarksUrl == 'w06pkg.w06savemulti' || allMarksUrl == 'web.w06pkg.w06_upd_multi_proc') {
+    if (MARKS_PAGES.includes(allMarksUrl) || allMarksUrl == IAHY_PAGE) {
         //A plain button: it sits outside the form, so it never submitted anything
         var btnPaste = document.createElement('input');
         btnPaste.id = 'btnPaste';
@@ -762,6 +766,8 @@
                 window.scrollTo(0, document.body.scrollHeight + 50);
             }
         });
+
+        if (MARKS_PAGES.includes(allMarksUrl)) deregPanel();
     }
 
     function removeExtraTabs(string) {
@@ -780,17 +786,16 @@
 
     function fillUpFields(marks) {
         if (marks == undefined) return;
+        if (allMarksUrl != IAHY_PAGE) {
+            pasteMarks(marks);
+            return;
+        }
         var data = removeExtraTabs(marks);
         var rows = data.split("\n"); //Get the rows from the excel
 
         //Get the list of inputs from the form
-        var fieldList, fieldChanged;
-        if (allMarksUrl == 'web.w06pkg.w06_upd_multi_proc') {
-            fieldList = Array.from(document.querySelectorAll('input[name="x_multi_iahymark"]')).filter(isVisible);
-            fieldChanged = Array.from(document.querySelectorAll('input[name="x_rec_changed"]'));
-        } else {
-            fieldList = Array.from(document.querySelectorAll('input[name="x_mark"]'));
-        }
+        var fieldList = Array.from(document.querySelectorAll('input[name="x_multi_iahymark"]')).filter(isVisible);
+        var fieldChanged = Array.from(document.querySelectorAll('input[name="x_rec_changed"]'));
 
         var field = 0;
 
@@ -816,11 +821,237 @@
 
             for (var x = 0; x < cells.length; x++) {
                 setValue(fieldList, field, cells[x]); //fill up the input
-                if (allMarksUrl == 'web.w06pkg.w06_upd_multi_proc') {
-                    setValue(fieldChanged, field + 1, "Y");
-                }
+                setValue(fieldChanged, field + 1, "Y");
             }
             field++;
         }
+    }
+
+    //Marks pages: each line pasted is the mark of the next student not flagged as deregistered.
+    //Nothing is written unless there is one line for each of those students and every mark is a
+    //whole number from 0 to 100 (no decimals). A blank line leaves that student's mark empty
+    function pasteMarks(marks) {
+        var fields = Array.from(markForm.querySelectorAll('tr.rldata:not([data-ienabler-dereg]) input[name="x_mark"]'));
+        var lines = marks.split(/\r\n|\r|\n/);
+        //A column copied from Excel ends with a line break
+        while (lines.length && !lines[lines.length - 1].trim()) lines.pop();
+
+        if (lines.length != fields.length) {
+            let flagged = markForm.querySelectorAll('tr.rldata[data-ienabler-dereg]').length;
+            alert('Nothing was pasted.\n\nMarks pasted: ' + lines.length +
+                '\nStudents to receive marks on this page: ' + fields.length +
+                (flagged ? ' (' + flagged + ' flagged as deregistered are left out)' : '') +
+                '\n\nThis normally means you selected the wrong spreadsheet or column, or that the deregistered students are not flagged yet.');
+            return;
+        }
+
+        var values = lines.map(line => line.trim());
+        if (values.some(value => value.includes('\t'))) {
+            alert("Nothing was pasted.\n\nYou must select only one column from Excel.");
+            return;
+        }
+
+        var problems = [];
+        values.forEach(function (value, i) {
+            if (value === '') return;
+            if (!/^\d+$/.test(value) || Number(value) > 100) {
+                problems.push('Line ' + (i + 1) + ': "' + value + '" is not a whole number from 0 to 100');
+            } else if (fields[i].maxLength > 0 && value.length > fields[i].maxLength) {
+                problems.push('Line ' + (i + 1) + ': "' + value + '" is longer than ' + fields[i].maxLength + ' characters');
+            }
+        });
+        if (problems.length) {
+            let shown = problems.slice(0, 10);
+            if (problems.length > shown.length) shown.push('and ' + (problems.length - shown.length) + ' more');
+            alert('Nothing was pasted.\n\n' + shown.join('\n'));
+            return;
+        }
+
+        values.forEach((value, i) => fields[i].value = value);
+    }
+
+    /*=== Deregistered students ===*/
+    //Marks pages: the student numbers still registered, pasted from Excel, flag every student on the
+    //page who is not in the list. The flagged mark and result stay in the form, only locked: the
+    //portal reads x_stno, x_mark and x_result as parallel lists, so a field disabled or removed would
+    //move every later mark to the wrong student.
+    //Each student is a tr.rldata (x_stno, x_mark, x_result, an empty Pass/Fail cell, ...) followed by
+    //a <tr> with one td.bdr_lbr cell holding the name; the portal puts <script> elements between some
+    //rows. Rows without an x_stno are never touched
+    function deregPanel() {
+        var panel = document.createElement('div');
+        panel.className = 'ienablerDeregPanel';
+
+        var label = panel.appendChild(document.createElement('label'));
+        label.htmlFor = 'ienablerDeregList';
+        label.textContent = 'Registered student numbers';
+        var hint = panel.appendChild(document.createElement('p'));
+        hint.id = 'ienablerDeregHint';
+        hint.textContent = 'Paste the student number column from Excel. Students on this page who are not in the list are flagged as deregistered, their mark and result are locked, and Paste from Excel leaves them out.';
+        //No name and outside the form, so it is never submitted
+        var list = panel.appendChild(document.createElement('textarea'));
+        list.id = 'ienablerDeregList';
+        list.rows = 4;
+        list.spellcheck = false;
+        list.autocomplete = 'off';
+        list.setAttribute('aria-describedby', 'ienablerDeregHint');
+
+        var buttons = panel.appendChild(document.createElement('div'));
+        buttons.className = 'ienablerDeregButtons';
+        var flag = buttons.appendChild(document.createElement('button'));
+        flag.type = 'button';
+        flag.className = 'ienablerBtn';
+        flag.textContent = 'Flag deregistered';
+        var clear = buttons.appendChild(document.createElement('button'));
+        clear.type = 'button';
+        clear.className = 'ienablerBtn';
+        clear.textContent = 'Clear flags';
+
+        //role="status" is read out politely by screen readers when its content changes
+        var summary = panel.appendChild(document.createElement('div'));
+        summary.id = 'ienablerDeregSummary';
+        summary.setAttribute('role', 'status');
+
+        function report(lines) {
+            summary.replaceChildren(...lines.map(function (text) {
+                let line = document.createElement('p');
+                line.textContent = text;
+                return line;
+            }));
+        }
+
+        flag.addEventListener('click', function () {
+            var numbers = deregNumbers(list.value);
+            if (!numbers.size) {
+                report(['No student numbers found. Paste the column of 9-digit student numbers from Excel.']);
+                list.focus();
+                return;
+            }
+            var rows = studentRows();
+            var onPage = new Set();
+            var toFlag = rows.filter(function (row) {
+                let number = row.querySelector('input[name="x_stno"]').value.trim();
+                onPage.add(number);
+                return !numbers.has(number);
+            });
+            if (rows.length && toFlag.length == rows.length && !confirm('None of the ' + rows.length + ' students on this page is in the list, so all of them would be flagged as deregistered.\nAre you sure you want to continue?')) return;
+
+            clearDereg();
+            toFlag.forEach(flagDereg);
+            var missing = Array.from(numbers).filter(number => !onPage.has(number));
+            //A mark already in a flagged row is kept, and saved with the form
+            var withMark = toFlag.filter(row => row.querySelector('input[name="x_mark"]').value.trim()).map(function (row) {
+                return row.querySelector('input[name="x_stno"]').value.trim() + ' (' + row.querySelector('input[name="x_mark"]').value.trim() + ')';
+            });
+            var lines = [
+                'Rows on page: ' + rows.length + '. Numbers in list: ' + numbers.size + '. Flagged as deregistered: ' + toFlag.length + '.',
+                missing.length ? 'In the list but not on this page (' + missing.length + '): ' + missing.join(', ') : 'Every number in the list is on this page.'
+            ];
+            if (withMark.length) lines.push('Flagged students who already have a mark, which is kept and saved (' + withMark.length + '): ' + withMark.join(', '));
+            report(lines);
+        });
+
+        clear.addEventListener('click', function () {
+            var cleared = clearDereg();
+            report([cleared ? 'Flags cleared from ' + cleared + (cleared == 1 ? ' student.' : ' students.') : 'No students were flagged.']);
+        });
+
+        //A select cannot be readonly: put back the result of a flagged student if it is changed
+        markForm.addEventListener('change', function (event) {
+            let field = event.target;
+            if (field.dataset && field.dataset.ienablerLocked !== undefined) field.value = field.dataset.ienablerLocked;
+        }, true);
+
+        btnPaste.before(panel);
+    }
+
+    function studentRows() {
+        return Array.from(markForm.querySelectorAll('tr.rldata')).filter(row => row.querySelector('input[name="x_stno"]'));
+    }
+
+    //Student numbers in text pasted from Excel: the first 9-digit number on each line, so a header,
+    //blank lines and other columns are left out
+    function deregNumbers(text) {
+        var numbers = new Set();
+        text.split(/\r\n|\r|\n/).forEach(function (line) {
+            let match = line.match(/(?:^|\D)(\d{9})(?!\d)/);
+            if (match) numbers.add(match[1]);
+        });
+        return numbers;
+    }
+
+    //The row after a student's row that holds the name: the next <tr>, skipping any <script>, if it
+    //is not another student and has a single td.bdr_lbr cell
+    function deregNameRow(row) {
+        var next = row.nextElementSibling;
+        while (next && next.tagName != 'TR') next = next.nextElementSibling;
+        if (!next || next.classList.contains('rldata') || next.querySelector('input[name="x_stno"]')) return null;
+        return next.cells.length == 1 && next.cells[0].classList.contains('bdr_lbr') ? next : null;
+    }
+
+    //Everything set here is marked with a data-ienabler-* attribute, so clearDereg can undo it exactly
+    function flagDereg(row, index) {
+        [row, deregNameRow(row)].forEach(function (tr) {
+            if (!tr) return;
+            tr.dataset.ienablerDereg = '1';
+            if (!tr.classList.contains('ienablerDereg')) {
+                tr.classList.add('ienablerDereg');
+                tr.dataset.ienablerDeregClass = '';
+            }
+        });
+
+        //The badge goes in the empty Pass/Fail cell (no fields, only &nbsp;)
+        var cell = Array.from(row.cells).find(td => td.classList.contains('bdr_t') && !td.children.length && !td.textContent.trim()) || row.cells[0];
+        var badge = document.createElement('span');
+        badge.className = 'ienablerDeregBadge';
+        badge.id = 'ienablerDeregBadge' + index;
+        badge.textContent = 'DEREGISTERED';
+        cell.appendChild(badge);
+
+        row.querySelectorAll('input[name="x_mark"], select[name="x_result"]').forEach(function (field) {
+            if (!field.hasAttribute('readonly')) {
+                field.setAttribute('readonly', '');
+                field.dataset.ienablerReadonly = '';
+            }
+            if (!field.hasAttribute('aria-describedby')) {
+                field.setAttribute('aria-describedby', badge.id);
+                field.dataset.ienablerDescribed = '';
+            }
+            if (field.tagName == 'SELECT') {
+                field.dataset.ienablerLocked = field.value;
+                if (!field.hasAttribute('aria-readonly')) {
+                    field.setAttribute('aria-readonly', 'true');
+                    field.dataset.ienablerAriaReadonly = '';
+                }
+            }
+        });
+    }
+
+    //Undo flagDereg on every flagged row; gives the number of students cleared
+    function clearDereg() {
+        var cleared = markForm.querySelectorAll('tr.rldata[data-ienabler-dereg]').length;
+        markForm.querySelectorAll('.ienablerDeregBadge').forEach(badge => badge.remove());
+        markForm.querySelectorAll('[data-ienabler-readonly]').forEach(function (field) {
+            field.removeAttribute('readonly');
+            delete field.dataset.ienablerReadonly;
+        });
+        markForm.querySelectorAll('[data-ienabler-described]').forEach(function (field) {
+            field.removeAttribute('aria-describedby');
+            delete field.dataset.ienablerDescribed;
+        });
+        markForm.querySelectorAll('[data-ienabler-aria-readonly]').forEach(function (field) {
+            field.removeAttribute('aria-readonly');
+            delete field.dataset.ienablerAriaReadonly;
+        });
+        markForm.querySelectorAll('[data-ienabler-locked]').forEach(field => delete field.dataset.ienablerLocked);
+        markForm.querySelectorAll('tr[data-ienabler-dereg]').forEach(function (tr) {
+            if (tr.dataset.ienablerDeregClass !== undefined) {
+                tr.classList.remove('ienablerDereg');
+                if (!tr.classList.length) tr.removeAttribute('class');
+                delete tr.dataset.ienablerDeregClass;
+            }
+            delete tr.dataset.ienablerDereg;
+        });
+        return cleared;
     }
 })();

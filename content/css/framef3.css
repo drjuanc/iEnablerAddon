@@ -503,6 +503,80 @@ body and h1-h6 rules (12px Arial, 16px bold)*/
     margin-bottom: 8px;
 }
 
+/*=== Deregistered students (marks pages) ===*/
+/*Not tied to the modern look: flagged rows have locked fields, so they must always stand out*/
+.ienablerDeregPanel {
+    clear: both;
+    max-width: 95%;
+    margin: 1rem 0;
+    padding: .75rem 1rem;
+    border: 1px solid var(--neutral-300);
+    border-radius: 8px;
+}
+
+.ienablerDeregPanel label {
+    display: block;
+    font-weight: 600;
+}
+
+.ienablerDeregPanel p {
+    margin: .25rem 0 .5rem 0;
+}
+
+#ienablerDeregList {
+    display: block;
+    width: 18rem;
+    max-width: 100%;
+    font-family: ui-monospace, Consolas, monospace;
+}
+
+.ie-theme.ie-f3 #ienablerDeregList:focus {
+    outline: 0;
+    border-color: var(--focusColor);
+    box-shadow: var(--focusRing);
+}
+
+.ienablerDeregButtons {
+    display: flex;
+    flex-wrap: wrap;
+    gap: .5rem;
+    margin-top: .5rem;
+}
+
+/*Flagged rows: grey, name struck through, and a "DEREGISTERED" badge (text, not colour alone).
+!important to win over the row hover of the themed table*/
+tr.ienablerDereg > td {
+    background-color: var(--neutral-200) !important;
+    color: var(--neutral-600) !important;
+}
+
+tr.ienablerDereg > td.bdr_lbr {
+    text-decoration: line-through;
+}
+
+.ienablerDeregBadge {
+    display: inline-block;
+    padding: .1rem .4rem;
+    border: 1px solid currentColor;
+    border-radius: 4px;
+    font-size: .75rem;
+    font-weight: 700;
+    letter-spacing: .03em;
+    color: var(--neutral-900);
+    background-color: var(--neutral-white);
+    text-decoration: none;
+}
+
+/*Locked fields. A select cannot be readonly: content.js puts the value back if it changes, and the
+mouse cannot open it. It can still be reached with Tab*/
+tr.ienablerDereg :is(input[name="x_mark"], select[name="x_result"]) {
+    background-color: var(--neutral-100);
+}
+
+tr.ienablerDereg select[name="x_result"] {
+    pointer-events: none;
+}
+
 /*Pop up menu on subject clicks*/
 .ie-theme.ie-f3 #overDiv {
     left: 10px !important;

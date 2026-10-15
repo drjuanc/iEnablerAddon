@@ -558,4 +558,30 @@ html.ie-dark body.customLogin img[src*="InsImg.gif"] {
     border-radius: 12px;
 }
 
+/*Deregistered students (marks pages, see framef3.css). Keyed on the flagged rows, not on the table:
+:not(#ie-dereg-boost) adds the weight of an id, so these win over the dark table cell, row hover
+and field rules*/
+html.ie-dark .ienablerDeregPanel {
+    border-color: var(--dk-border) !important;
+}
+
+html.ie-dark.ie-theme.ie-f3 #ienablerDeregList:focus {
+    border-color: var(--dk-focus) !important;
+    box-shadow: 0 0 0 3px var(--dk-focus) !important;
+}
+
+html.ie-dark.ie-theme.ie-f3 tr.ienablerDereg[data-ienabler-dereg]:not(#ie-dereg-boost) > td {
+    background-color: var(--dk-raised) !important;
+    color: var(--dk-muted) !important;
+}
+
+html.ie-dark .ienablerDeregBadge {
+    color: var(--dk-text) !important;
+    background-color: var(--dk-bg) !important;
+}
+
+html.ie-dark.ie-theme.ie-f3 tr.ienablerDereg[data-ienabler-dereg]:not(#ie-dereg-boost) :is(input[name="x_mark"], select[name="x_result"]) {
+    background-color: var(--dk-bg) !important;
+}
+
 } /*@media screen*/
