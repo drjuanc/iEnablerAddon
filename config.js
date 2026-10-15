@@ -14,7 +14,8 @@ const DEFAULT_CONFIG = [
     ['otherConfg', false],       //[6]
     ['userType', 'S'],           //[7] S student, P personnel, A alumni, O other (values of the login radios)
     ['colourScheme', 'auto'],    //[8] auto (follows the device), light or dark: the popup always, the iEnabler pages and the login page with the modern look
-    ['hideFooter', false]        //[9] hide the bar of portal links at the bottom of the main page and the login page (with the modern look)
+    ['hideFooter', false],       //[9] hide the bar of portal links at the bottom of the main page and the login page (with the modern look)
+    ['ctrlClickNewTab', false]   //[10] Ctrl+click (or Ctrl+Enter) on a subject menu option opens the whole portal in a new tab at that page (with the modern look)
 
 ];
 
@@ -36,6 +37,13 @@ function mergeConfig(storedConfig) {
     storedConfig = storedConfig.filter(item => !(Array.isArray(item) && item[0] === 'popupTheme'));
     if (popupTheme && !storedConfig.some(item => Array.isArray(item) && item[0] === 'colourScheme')) {
         storedConfig.push(['colourScheme', popupTheme[1]]);
+    }
+
+    //While it was being built, 'Ctrl+click opens in a new tab' was called 'ctrlClickNewWindow'
+    let ctrlClickNewWindow = storedConfig.find(item => Array.isArray(item) && item[0] === 'ctrlClickNewWindow');
+    storedConfig = storedConfig.filter(item => !(Array.isArray(item) && item[0] === 'ctrlClickNewWindow'));
+    if (ctrlClickNewWindow && !storedConfig.some(item => Array.isArray(item) && item[0] === 'ctrlClickNewTab')) {
+        storedConfig.push(['ctrlClickNewTab', ctrlClickNewWindow[1]]);
     }
 
     //Before v2.0.0 the login page had its own 'WSU colours' switch. It now follows the Appearance one

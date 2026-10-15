@@ -21,6 +21,7 @@
     //The device's light or dark setting, for the "Automatic" colour scheme
     const DARK_DEVICE = window.matchMedia('(prefers-color-scheme: dark)');
     let lastConfig = null; //Settings last applied, to apply again when the device setting changes
+    let ctrlClickOn = false; //"Ctrl+click opens in a new tab", see Open in a new tab below
     const IS_LOGIN = currentURl.includes('mi_login');
     let login = null; //What is applied to the login page, see applyLogin
 
@@ -380,7 +381,8 @@
             colours: theme && setting(config, 'customColors') === true,
             a11y: theme && setting(config, 'wgca') === true,
             dark: theme && (scheme == 'dark' || (scheme == 'auto' && DARK_DEVICE.matches)),
-            noFooter: theme && setting(config, 'hideFooter') === true
+            noFooter: theme && setting(config, 'hideFooter') === true,
+            ctrlClick: theme && setting(config, 'ctrlClickNewTab') === true
         };
     }
 
@@ -425,6 +427,7 @@
         root.classList.toggle('ie-colours', settings.colours);
         root.classList.toggle('ie-dark', settings.dark);
         root.classList.toggle('ie-no-footer', settings.noFooter);
+        ctrlClickOn = settings.ctrlClick; //Read by the listeners at the time of each click
 
         if (settings.a11y && !applied.a11y) {
             root.classList.add('ie-a11y');
@@ -750,6 +753,92 @@
             }
         });
     }
+
+    /*=== Open in a new tab ===*/
+    //With "Ctrl+click opens in a new tab" on, Ctrl+click or Ctrl+Enter on an option in a subject's
+    //menu (overlib's pop-up, table.popUpContent in #overDiv, see themeF3) opens the whole portal in a
+    //new tab, with its main menu page at <main menu URL>#ienabler-goto=<target>. The main menu
+    //page there points its content frame at the target (openFromHash). Without Ctrl, with any other
+    //modifier, or with the setting off, the portal does what it always did. No href is changed
+    const GOTO = '#ienabler-goto=';
+
+    //The absolute URL of a portal page (package.procedure, such as w06pkg.w06marks_entry, in the same
+    //folder as this page), or null. Relative links only: javascript: and any other scheme are left out
+    function portalUrl(href) {
+        href = (href || '').trim();
+        if (!href || /^[a-z][a-z0-9+.-]*:/i.test(href) || href.startsWith('//') || href.startsWith('#')) return null;
+        return checkPortalUrl(new URL(href, document.baseURI).href);
+    }
+
+    //The same check for an absolute URL: this site, this page's folder, a package.procedure page
+    function checkPortalUrl(href) {
+        let url;
+        try {
+            url = new URL(href);
+        } catch (e) {
+            return null;
+        }
+        let folder = location.pathname.replace(/[^/]*$/, '');
+        if (url.origin != location.origin || !url.pathname.startsWith(folder)) return null;
+        return /^[a-z]\w*(\.\w+)+$/i.test(url.pathname.slice(folder.length)) ? url.href : null;
+    }
+
+    //Content frame: one listener for every menu, as overlib builds a new one on each click. Capture
+    //phase, so it runs before the link's own handlers, which are then stopped
+    function ctrlClickOpen(event) {
+        if (!ctrlClickOn || !event.ctrlKey || event.shiftKey || event.altKey || event.metaKey) return;
+        if (event.type == 'keydown' && event.key != 'Enter') return;
+        if (event.type == 'click' && event.button != 0) return;
+        let link = event.target.closest ? event.target.closest('a[href]') : null;
+        if (!link || !link.closest('table.popUpContent')) return;
+        let target = portalUrl(link.getAttribute('href'));
+        if (!target) return;
+
+        event.preventDefault();
+        event.stopPropagation();
+        let main = window.top.location.href.split('#')[0];
+        window.open(main + GOTO + encodeURIComponent(target), '_blank', 'noopener');
+    }
+
+    if (FRAME == 'f3') {
+        document.addEventListener('click', ctrlClickOpen, true);
+        document.addEventListener('keydown', ctrlClickOpen, true);
+    }
+
+    //Main menu page opened by ctrlClickOpen: point the content frame (iframe F3) at the target, only if
+    //it is a portal page on this site, and clear the hash so reloading does not jump again
+    function openFromHash() {
+        if (!location.hash.startsWith(GOTO)) return;
+        let target = null;
+        try {
+            target = checkPortalUrl(decodeURIComponent(location.hash.slice(GOTO.length)));
+        } catch (e) {
+            //Badly encoded: ignored
+        }
+        history.replaceState(history.state, '', location.pathname + location.search);
+        if (!target) {
+            console.warn('iEnablerAddon: ignored a link to a page outside the portal');
+            return;
+        }
+
+        //The frame is in the page's markup, but wait for it in case it is added later
+        let frame = document.querySelector('iframe[name="F3"]');
+        if (frame) {
+            frame.contentWindow.location.replace(target);
+            return;
+        }
+        let observer = new MutationObserver(function () {
+            frame = document.querySelector('iframe[name="F3"]');
+            if (!frame) return;
+            observer.disconnect();
+            frame.contentWindow.location.replace(target);
+        });
+        observer.observe(document.documentElement, { childList: true, subtree: true });
+        setTimeout(() => observer.disconnect(), 10000);
+    }
+
+    //Does not wait for the settings: only a link made with the setting on carries the hash
+    if (FRAME == 'top') openFromHash();
 
     /*=== Paste from Excel ===*/
     //On the pages that enter the marks of many students at once, a button above the form fills

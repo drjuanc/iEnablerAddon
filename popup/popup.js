@@ -6,7 +6,7 @@ the config changes (content/content.js)*/
 var arrConfig; //The settings, read when the popup opens
 //Options that only apply with the modern look, the master switch for the iEnabler pages and the
 //login page: disabled while it is off. The colour scheme stays enabled: it also sets this window
-var THEME_OPTIONS = ['customColors', 'wcga', 'hideFooter', 'fixLogo', 'userTypeGroup', 'userTypeDef', 'cleanLogin'];
+var THEME_OPTIONS = ['customColors', 'wcga', 'hideFooter', 'ctrlClickNewTab', 'fixLogo', 'userTypeGroup', 'userTypeDef', 'cleanLogin'];
 
 function byId(id) {
     return document.getElementById(id);
@@ -65,7 +65,7 @@ function updateThemeOptions() {
     var theme = arrConfig[0][1] === true;
     setDisabled(THEME_OPTIONS, !theme);
     [['customColors', 1, 'customColors'], ['wcga', 2, 'wgca'], ['fixLogo', 3, 'fixWSULogo'], ['userTypeDef', 4, 'userTypeDef'],
-        ['cleanLogin', 5, 'cleanLogin'], ['hideFooter', 9, 'hideFooter']].forEach(function ([id, index, key]) {
+        ['cleanLogin', 5, 'cleanLogin'], ['hideFooter', 9, 'hideFooter'], ['ctrlClickNewTab', 10, 'ctrlClickNewTab']].forEach(function ([id, index, key]) {
         if (arrConfig[index] && arrConfig[index][0] == key) setChecked(id, theme && arrConfig[index][1]);
     });
 }
@@ -90,6 +90,7 @@ onChange('customTheme', function (state) {
 saveSwitch('customColors', 1, 'customColors'); // "WSU colours"
 saveSwitch('wcga', 2, 'wgca');                  // "Accessibility enhancements"
 saveSwitch('hideFooter', 9, 'hideFooter');      // "Hide the page footer"
+saveSwitch('ctrlClickNewTab', 10, 'ctrlClickNewTab'); // "Ctrl+click opens in a new tab"
 saveSwitch('fixLogo', 3, 'fixWSULogo');         // "New WSU logo"
 saveSwitch('userTypeDef', 4, 'userTypeDef');    // "Pre-select my choice on the login page"
 saveSwitch('cleanLogin', 5, 'cleanLogin');      // "Hide the Prospective Students box"
