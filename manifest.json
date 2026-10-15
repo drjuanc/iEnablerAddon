@@ -2,7 +2,8 @@
   "name": "iEnablerAddon",
   "description": "Improves the look and usability of the Walter Sisulu University ITS iEnabler portal",
   "version": "2.0.0",
-  "author": "Dr Alonso",
+  "author": {"email": "dr.juanc@gmail.com"},
+  "homepage_url": "https://github.com/drjuanc/iEnablerAddon",
   "manifest_version": 3,
 
   "icons": {
