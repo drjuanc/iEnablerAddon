@@ -20,9 +20,9 @@ Browser extension (Chrome/Edge) that improves the look and usability of the Walt
 
 ## Development environment
 
-- Code lives in WSL (Ubuntu 24.04) at `~/iEnablerAddon`
+- Code lives in WSL (Ubuntu 24.04) at `~/iEnabler`
 - Editor: VS Code. When suggesting changes, give full file contents or clear edits, not bash heredocs.
-- Testing: load unpacked in Chrome/Edge on Windows from `\\wsl.localhost\Ubuntu-24.04\home\crash\iEnablerAddon`
+- Testing: load unpacked in Chrome/Edge on Windows from `\\wsl.localhost\Ubuntu-24.04\home\alonso\iEnabler`
 - GitHub: `drjuanc/iEnablerAddon`, default branch `main`
 
 ## Conventions

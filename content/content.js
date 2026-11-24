@@ -844,11 +844,36 @@
     //On the pages that enter the marks of many students at once, a button above the form fills
     //the mark fields from a column copied from Excel, in the order the students appear.
     //On the marks pages (MARKS_PAGES) students who are no longer registered can be flagged first,
-    //see Deregistered students below: the paste leaves their rows out
-    const MARKS_PAGES = ['w26pkg.w26savemulti', 'w06pkg.w06savemulti'];
+    //see Deregistered students below: the paste leaves their rows out.
+    //w24 (w24pkg.w24entermarks) has its own layout: one tr.mrdatadisp per student, name in the same
+    //row, no result drop-down. Paste works there; flagging deregistered students does not (see DEREG_PAGES)
+    //Page names are compared in lower case, see formPage
+    const W24_PAGE = 'w24pkg.w24savemulti';
+    const MARKS_PAGES = ['w26pkg.w26savemulti', 'w06pkg.w06savemulti', W24_PAGE];
+    const DEREG_PAGES = ['w26pkg.w26savemulti', 'w06pkg.w06savemulti'];
     const IAHY_PAGE = 'web.w06pkg.w06_upd_multi_proc';
+    //Student rows on the marks pages: tr.rldata on w06 and w26, tr.mrdatadisp on w24
+    const MARK_ROWS = ['tr.rldata', 'tr.mrdatadisp'];
     var markForm = document.querySelector('form[name="frmOne"]');
-    var allMarksUrl = markForm ? markForm.getAttribute('action') : undefined;
+    var allMarksUrl = formPage(markForm);
+
+    //The page a form submits to: its action resolved against this page, last part of the path, in
+    //lower case, so 'w06pkg.w06savemulti', '/pls/prodi41/W06PKG.w06savemulti' and a full URL with a
+    //query all give 'w06pkg.w06savemulti'. No form, no action or a broken one gives ''
+    function formPage(form) {
+        let action = form ? form.getAttribute('action') : null;
+        if (!action || !action.trim()) return '';
+        try {
+            return new URL(action.trim(), document.baseURI).pathname.split('/').pop().toLowerCase();
+        } catch (e) {
+            return '';
+        }
+    }
+
+    //Selector for something in every student row, such as ':not([data-ienabler-dereg]) input[name="x_mark"]'
+    function markRows(suffix) {
+        return MARK_ROWS.map(row => row + suffix).join(', ');
+    }
 
     if (MARKS_PAGES.includes(allMarksUrl) || allMarksUrl == IAHY_PAGE) {
         //A plain button: it sits outside the form, so it never submitted anything
@@ -869,7 +894,7 @@
             }
         });
 
-        if (MARKS_PAGES.includes(allMarksUrl)) deregPanel();
+        if (DEREG_PAGES.includes(allMarksUrl)) deregPanel();
     }
 
     function removeExtraTabs(string) {
@@ -933,13 +958,13 @@
     //Nothing is written unless there is one line for each of those students and every mark is a
     //whole number from 0 to 100 (no decimals). A blank line leaves that student's mark empty
     function pasteMarks(marks) {
-        var fields = Array.from(markForm.querySelectorAll('tr.rldata:not([data-ienabler-dereg]) input[name="x_mark"]'));
+        var fields = Array.from(markForm.querySelectorAll(markRows(':not([data-ienabler-dereg]) input[name="x_mark"]')));
         var lines = marks.split(/\r\n|\r|\n/);
         //A column copied from Excel ends with a line break
         while (lines.length && !lines[lines.length - 1].trim()) lines.pop();
 
         if (lines.length != fields.length) {
-            let flagged = markForm.querySelectorAll('tr.rldata[data-ienabler-dereg]').length;
+            let flagged = markForm.querySelectorAll(markRows('[data-ienabler-dereg]')).length;
             alert('Nothing was pasted.\n\nMarks pasted: ' + lines.length +
                 '\nStudents to receive marks on this page: ' + fields.length +
                 (flagged ? ' (' + flagged + ' flagged as deregistered are left out)' : '') +
@@ -970,6 +995,15 @@
         }
 
         values.forEach((value, i) => fields[i].value = value);
+
+        //w24 checks each mark with its own onchange="chk_outOf(this)": run it as if the mark was typed.
+        //Not on w06 and w26, which behave as before
+        if (allMarksUrl == W24_PAGE) {
+            fields.forEach(function (field) {
+                field.dispatchEvent(new Event('input', { bubbles: true }));
+                field.dispatchEvent(new Event('change', { bubbles: true }));
+            });
+        }
     }
 
     /*=== Deregistered students ===*/
