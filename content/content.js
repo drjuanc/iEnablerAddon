@@ -529,8 +529,8 @@
     }
 
     //Subjects table: a real header, tooltips, and a search box that filters the rows. The rows stay
-    //the portal's own elements, so the subject links (do_menu) work as before. Every change is undone
-    //in place (see revert), so the table and everything in it stay the same live elements
+    //the portal's own elements, so the subject links (do_menu or doMenu) work as before. Every change
+    //is undone in place (see revert), so the table and everything in it stay the same live elements
     function subjectsTable() {
         let table = findSubjectsTable();
         if (!table) return;
@@ -572,7 +572,7 @@
                 words.push(cell.textContent);
                 if (cell.title) words.push(cell.title);
             });
-            let link = row.querySelector('a[onclick*="do_menu"]');
+            let link = subjectLink(row);
             let name = link ? subjectName(link.getAttribute('onclick')) : null;
             if (name) {
                 if (!link.title) setAttr('theme', link, 'title', name);
@@ -625,17 +625,25 @@
         });
     }
 
-    //The subjects table is the .rltable with a header row and subject links (do_menu). A table with
-    //fields, such as the marks table on the marks pages, never is, whatever links it has
+    //The subjects table is the .rltable with a header row and subject links (see subjectLink). A table
+    //with fields, such as the marks table on the marks pages, never is, whatever links it has
     function findSubjectsTable() {
         return Array.from(document.querySelectorAll('table.rltable')).find(function (table) {
-            return table.querySelector('tr.rlheader') && table.querySelector('a[onclick*="do_menu"]') && !table.querySelector('input, select');
+            return table.querySelector('tr.rlheader') && subjectLink(table) && !table.querySelector('input, select');
         }) || null;
+    }
+
+    //The first subject link inside an element, or null. A subject link opens the subject's menu:
+    //onclick="do_menu(...)" on the old portal, "return doMenu(...); return false;" since iEnabler
+    //renamed it. Both are accepted
+    function subjectLink(scope) {
+        return Array.from(scope.querySelectorAll('a[onclick]')).find(link => /\bdo_?menu\s*\(/i.test(link.getAttribute('onclick'))) || null;
     }
 
     //Subject name: the 13th argument of the row's do_menu('2026','AEM37W0',...) call. The onclick
     //text is only read, never run. Every argument must be a quoted string, otherwise the row gets
-    //no name (null) rather than a wrong one
+    //no name (null) rather than a wrong one. doMenu('AEM37W0','2026',...) has no name among its
+    //arguments, so it gives null: its row is still found by the description in the next cell
     function subjectName(onclick) {
         let start = onclick ? onclick.indexOf('do_menu(') : -1;
         if (start < 0) return null;

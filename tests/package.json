@@ -1,0 +1,11 @@
+{
+  "name": "ienableraddon-tests",
+  "private": true,
+  "description": "Development-only mock-page tests for content/content.js. Not part of the extension.",
+  "scripts": {
+    "test": "node sim.js && node subjects.js"
+  },
+  "devDependencies": {
+    "jsdom": "24.1.3"
+  }
+}
