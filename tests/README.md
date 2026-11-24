@@ -7,7 +7,7 @@ live portal is needed. They are not part of the extension: `tests/` is left out 
 
 | File | What it checks |
 |---|---|
-| `sim.js` | Paste from Excel and deregistered flagging: page detection (w06, w26, w24, IAHY, form action variants), paste validation, `chk_outOf` on w24, w06/w26/IAHY behaviour unchanged |
+| `sim.js` | Paste from Excel and deregistered flagging: page detection (w06, w26, w24, IAHY, form action variants), paste validation, `chk_outOf` on w24, student count and row numbers (count text, numbers 1..n, flagged rows, submitted fields unchanged), w06/w26/IAHY behaviour unchanged |
 | `subjects.js` | The "Search subjects" filter with `do_menu` and `doMenu` links, no filter on marks pages, Ctrl+click / Ctrl+Enter on the subject pop-up menu. Runs the script inside a mock `mi_main_menu` frame F3 |
 
 ## Running them

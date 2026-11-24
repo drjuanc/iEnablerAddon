@@ -892,6 +892,14 @@
         btnPaste.className = 'ienablerBtn ienablerBtnPrimary ienablerBtnRight';
         markForm.before(btnPaste);
 
+        //How many students are listed, on its own line between the button and the table. Plain text, not a live region: on the
+        //dereg pages the summary already announces the flags. Outside the form, no fields
+        var studentCount = document.createElement('p');
+        studentCount.id = 'ienablerStudentCount';
+        btnPaste.after(studentCount);
+        if (allMarksUrl != IAHY_PAGE) numberRows();
+        updateCount();
+
         btnPaste.addEventListener('click', function () {
             var marks = window.prompt("Paste from Excel.\nPlease make sure the student marks are in the same order they appear on this page", "Marks");
             //Cancel gives null, which passes this check: fillUpFields then does nothing, but the page
@@ -903,6 +911,59 @@
         });
 
         if (DEREG_PAGES.includes(allMarksUrl)) deregPanel();
+    }
+
+    //Student rows on the marks pages (w06, w26, w24), in page order: rows without an x_stno are left out
+    function markStudentRows() {
+        return Array.from(markForm.querySelectorAll(markRows(''))).filter(row => row.querySelector('input[name="x_stno"]'));
+    }
+
+    //A number (1, 2, 3...) at the start of each student row, to match lines in Excel to rows on the
+    //page. Inside the first cell, not a new column: on w06 and w26 the name row below each student
+    //has a single cell, so an extra column would break the table. aria-hidden, so screen readers do
+    //not read it as part of the student number. Flagged rows keep their number
+    function numberRows() {
+        var rows = markStudentRows();
+        rows.forEach(function (row, i) {
+            if (!row.cells[0]) return;
+            row.cells[0].prepend(rowNoSpan('ienablerRowNo', (i + 1) + '-'));
+        });
+        //"No." in the first cell of the header row, also inside the cell (no new column)
+        var header = rows.length ? markHeaderRow(rows[0]) : null;
+        if (header && header.cells[0]) header.cells[0].prepend(rowNoSpan('ienablerRowNoHeader', 'No.'));
+    }
+
+    function rowNoSpan(className, text) {
+        var span = document.createElement('span');
+        span.className = className;
+        span.setAttribute('aria-hidden', 'true');
+        span.textContent = text;
+        return span;
+    }
+
+    //The header row of the marks table: the last tr.mrheader (w24) or tr.rlheader (the portal's
+    //other tables) above the first student row, in the same table. None gives null
+    function markHeaderRow(firstRow) {
+        var table = firstRow.closest('table');
+        if (!table) return null;
+        var header = null;
+        for (let row of table.rows) {
+            if (row == firstRow) break;
+            if (row.matches('tr.mrheader, tr.rlheader')) header = row;
+        }
+        return header;
+    }
+
+    //"45 students", or "45 students (2 flagged)" once deregistered students are flagged. IAHY counts
+    //its mark fields shown on the page
+    function updateCount() {
+        var count = document.getElementById('ienablerStudentCount');
+        if (!count) return;
+        var total = allMarksUrl == IAHY_PAGE
+            ? Array.from(document.querySelectorAll('input[name="x_multi_iahymark"]')).filter(isVisible).length
+            : markStudentRows().length;
+        var flagged = DEREG_PAGES.includes(allMarksUrl) ? markForm.querySelectorAll(markRows('[data-ienabler-dereg]')).length : 0;
+        count.textContent = total + (total == 1 ? ' student' : ' students') + (flagged ? ' (' + flagged + ' flagged)' : '');
     }
 
     function removeExtraTabs(string) {
@@ -1093,10 +1154,12 @@
             ];
             if (withMark.length) lines.push('Flagged students who already have a mark, which is kept and saved (' + withMark.length + '): ' + withMark.join(', '));
             report(lines);
+            updateCount();
         });
 
         clear.addEventListener('click', function () {
             var cleared = clearDereg();
+            updateCount();
             report([cleared ? 'Flags cleared from ' + cleared + (cleared == 1 ? ' student.' : ' students.') : 'No students were flagged.']);
         });
 

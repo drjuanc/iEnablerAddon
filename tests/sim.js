@@ -12,9 +12,10 @@ function check(name, ok, detail) {
     console.log((ok ? 'PASS ' : 'FAIL ') + name + (detail !== undefined ? '  [' + detail + ']' : ''));
 }
 
-// w06/w26: tr.rldata (x_stno, x_mark, x_result, empty td.bdr_t), name in the next row (td.bdr_lbr)
-function oldPage(action, n) {
-    let rows = '';
+// w06/w26: tr.rldata (x_stno, x_mark, x_result, empty td.bdr_t), name in the next row (td.bdr_lbr).
+// header: a tr.rlheader first, as in the portal's other tables (not yet seen on a live w06/w26 page)
+function oldPage(action, n, header) {
+    let rows = header ? '<tr class="rlheader"><td>Student Number</td><td>Mark</td><td>Result</td><td>&nbsp;</td></tr>' : '';
     for (let i = 1; i <= n; i++) {
         rows += `<tr class="rldata"><td><input name="x_stno" value="22000000${i}"></td><td><input type="text" name="x_mark" value="" maxlength="3"></td>
 <td><select name="x_result"><option value="P">P</option><option value="F">F</option></select></td><td class="bdr_t">&nbsp;</td></tr>
@@ -150,6 +151,79 @@ console.log('== w06 / w26 unchanged');
     paste(w, '11\n33\n');
     check(action + ': paste skips the flagged row', JSON.stringify(marks(w)) == '["11","20","33"]', marks(w).join(','));
 });
+
+// --- Student count and row numbers ---
+console.log('== Student count and row numbers');
+const countText = w => (w.document.getElementById('ienablerStudentCount') || {}).textContent;
+const rowNos = w => Array.from(w.document.querySelectorAll('.ienablerRowNo')).map(s => s.textContent);
+const formFields = w => JSON.stringify(Array.from(new w.FormData(w.document.forms.frmOne).entries()));
+const oneToN = n => JSON.stringify(Array.from({ length: n }, (_, i) => (i + 1) + '-'));
+const headerNo = row => row && row.cells[0].firstChild && row.cells[0].firstChild.className == 'ienablerRowNoHeader' ? row.cells[0].firstChild : null;
+const fieldsBefore = {
+    w06: formFields(new JSDOM(oldPage('w06pkg.w06savemulti', 3, true), { url: BASE + 'page' }).window),
+    w26: formFields(new JSDOM(oldPage('w26pkg.w26savemulti', 3, true), { url: BASE + 'page' }).window),
+    w24: formFields(new JSDOM(w24Page(5), { url: BASE + 'page' }).window),
+};
+[['w06', 'w06pkg.w06savemulti'], ['w26', 'w26pkg.w26savemulti']].forEach(([name, action]) => {
+    const w = load(oldPage(action, 3, true), BASE + 'page');
+    const d = w.document;
+    const count = d.getElementById('ienablerStudentCount');
+    check(name + ': count just above the table, after the button, outside the form', count && d.getElementById('btnPaste').nextElementSibling == count && count.nextElementSibling == d.forms.frmOne && !d.forms.frmOne.contains(count));
+    check(name + ': count is "3 students"', countText(w) == '3 students', countText(w));
+    check(name + ': count is plain text, not a live region', count && !count.hasAttribute('aria-live') && !count.hasAttribute('role'));
+    check(name + ': rows numbered 1-..3-', JSON.stringify(rowNos(w)) == oneToN(3), rowNos(w).join(','));
+    const hdr = headerNo(d.querySelector('tr.rlheader'));
+    check(name + ': "No." aria-hidden at the start of the first header cell', !!hdr && hdr.textContent == 'No.' && hdr.getAttribute('aria-hidden') == 'true' && hdr.nextSibling.textContent == 'Student Number', d.querySelector('tr.rlheader').cells[0].textContent);
+    check(name + ': header has no new column, only one "No."', d.querySelector('tr.rlheader').cells.length == 4 && d.querySelectorAll('.ienablerRowNoHeader').length == 1);
+    check(name + ': each number is aria-hidden at the start of the first cell of its student row',
+        Array.from(d.querySelectorAll('tr.rldata')).every(tr => tr.cells[0].firstChild.className == 'ienablerRowNo' && tr.cells[0].firstChild.getAttribute('aria-hidden') == 'true'));
+    check(name + ': name rows untouched (one td.bdr_lbr, no number)', Array.from(d.querySelectorAll('td.bdr_lbr')).every(td => td.parentNode.cells.length == 1 && !td.querySelector('.ienablerRowNo')));
+    check(name + ': no new columns', Array.from(d.querySelectorAll('tr.rldata')).every(tr => tr.cells.length == 4));
+    check(name + ': submitted fields unchanged', formFields(w) == fieldsBefore[name]);
+
+    d.getElementById('ienablerDeregList').value = '220000001\n220000003\n';
+    d.querySelector('.ienablerDeregButtons button').click();
+    check(name + ': count after flagging is "3 students (1 flagged)"', countText(w) == '3 students (1 flagged)', countText(w));
+    const flaggedNo = d.querySelector('tr.rldata[data-ienabler-dereg] .ienablerRowNo');
+    check(name + ': flagged row keeps its number', !!flaggedNo && flaggedNo.textContent == '2-');
+    check(name + ': numbers still 1..3 after flagging', JSON.stringify(rowNos(w)) == oneToN(3), rowNos(w).join(','));
+    paste(w, '11\n33\n');
+    check(name + ': paste still skips the flagged row', JSON.stringify(marks(w)) == '["11","","33"]', marks(w).join(','));
+    check(name + ': x_stno values unchanged', JSON.stringify(Array.from(d.querySelectorAll('[name=x_stno]')).map(f => f.value)) == '["220000001","220000002","220000003"]');
+
+    d.querySelectorAll('.ienablerDeregButtons button')[1].click();
+    check(name + ': count after Clear flags is "3 students"', countText(w) == '3 students', countText(w));
+    check(name + ': numbers kept after Clear flags', JSON.stringify(rowNos(w)) == oneToN(3), rowNos(w).join(','));
+});
+{
+    const w = load(w24Page(5), BASE + 'w24pkg.w24entermarks');
+    const d = w.document;
+    check('w24: count is "5 students"', countText(w) == '5 students', countText(w));
+    check('w24: rows numbered 1-..5-', JSON.stringify(rowNos(w)) == oneToN(5), rowNos(w).join(','));
+    check('w24: numbers are aria-hidden, in the student number cell', Array.from(d.querySelectorAll('tr.mrdatadisp')).every(tr => tr.cells[0].firstChild.className == 'ienablerRowNo' && tr.cells[0].firstChild.getAttribute('aria-hidden') == 'true'));
+    check('w24: header row not numbered, no new columns', !d.querySelector('tr.mrheader .ienablerRowNo') && d.querySelector('tr.mrheader').cells.length == 6 && Array.from(d.querySelectorAll('tr.mrdatadisp')).every(tr => tr.cells.length == 7));
+    const hdr = headerNo(d.querySelector('tr.mrheader'));
+    check('w24: "No." aria-hidden at the start of the first header cell', !!hdr && hdr.textContent == 'No.' && hdr.getAttribute('aria-hidden') == 'true' && hdr.nextSibling.textContent == 'Student Number', d.querySelector('tr.mrheader').cells[0].textContent);
+    check('w24: count just above the table, after the button', d.getElementById('btnPaste').nextElementSibling == d.getElementById('ienablerStudentCount') && d.getElementById('ienablerStudentCount').nextElementSibling == d.forms.frmOne);
+    check('w24: submitted fields unchanged', formFields(w) == fieldsBefore.w24);
+    paste(w, '1\n2\n3\n4\n5\n');
+    const filled = Array.from(d.querySelectorAll('tr.mrdatadisp')).map(tr => (tr.querySelector('.ienablerRowNo') || {}).textContent + '=' + tr.querySelector('[name=x_mark]').value);
+    check('w24: paste fills row n with line n', JSON.stringify(filled) == '["1-=1","2-=2","3-=3","4-=4","5-=5"]', filled.join(','));
+}
+{
+    const w = load(oldPage('w06pkg.w06savemulti', 1), BASE + 'page');
+    check('w06: one student is "1 student"', countText(w) == '1 student', countText(w));
+    check('w06 without a header row: rows numbered, no "No." added', JSON.stringify(rowNos(w)) == oneToN(1) && !w.document.querySelector('.ienablerRowNoHeader'));
+}
+{
+    const w = load(iahyPage(), BASE + 'page');
+    check('IAHY: count is "2 students"', countText(w) == '2 students', countText(w));
+    check('IAHY: no row numbers', !rowNos(w).length && !w.document.querySelector('.ienablerRowNoHeader'));
+}
+{
+    const w = load(oldPage('w99pkg.other', 2), BASE + 'page');
+    check('unknown page: no count, no row numbers', !w.document.getElementById('ienablerStudentCount') && !rowNos(w).length);
+}
 
 // --- IAHY unchanged ---
 console.log('== IAHY unchanged');

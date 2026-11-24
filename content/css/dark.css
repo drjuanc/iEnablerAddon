@@ -573,6 +573,10 @@ html.ie-dark body.customLogin img[src*="InsImg.gif"] {
 /*Deregistered students (marks pages, see framef3.css). Keyed on the flagged rows, not on the table:
 :not(#ie-dereg-boost) adds the weight of an id, so these win over the dark table cell, row hover
 and field rules*/
+html.ie-dark .ienablerRowNo {
+    color: var(--dk-muted) !important;
+}
+
 html.ie-dark .ienablerDeregPanel {
     border-color: var(--dk-border) !important;
 }

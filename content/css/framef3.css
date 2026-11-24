@@ -517,6 +517,36 @@ with a header row and spacing like the subjects table*/
     margin-bottom: 8px;
 }
 
+/*Student count: on its own line just above the marks table, on the left, below the floated
+"Paste from Excel" button. nowrap keeps "63 students" together*/
+#ienablerStudentCount {
+    display: block;
+    clear: both;
+    float: none;
+    width: auto;
+    margin: 0 0 .5rem 0;
+    text-align: left;
+    white-space: nowrap;
+    font-weight: 600;
+}
+
+/*Row numbers ("1-", "2-"...) at the start of each student row, and "No." in the header cell above
+them: same width, so they line up (aria-hidden; not selectable, so copying a student number
+leaves them out)*/
+.ienablerRowNo, .ienablerRowNoHeader {
+    display: inline-block;
+    min-width: 4ch;
+    margin-right: .5rem;
+    text-align: left;
+    font-variant-numeric: tabular-nums;
+    white-space: nowrap;
+    user-select: none;
+}
+
+.ienablerRowNo {
+    color: var(--neutral-600);
+}
+
 /*=== Deregistered students (marks pages) ===*/
 /*Not tied to the modern look: flagged rows have locked fields, so they must always stand out*/
 .ienablerDeregPanel {
